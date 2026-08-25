@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /v1/
-Disallow: /app/
+Disallow: /static/dashboard.html
+Disallow: /static/app.html
 
-Sitemap: https://ailiabilitygateway.com/sitemap.xml
+Sitemap: https://arexid.com/static/sitemap.xml
