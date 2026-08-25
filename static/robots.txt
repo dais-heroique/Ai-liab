@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /v1/
+Disallow: /app/
+
+Sitemap: https://ailiabilitygateway.com/sitemap.xml
