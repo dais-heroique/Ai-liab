@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Liability Gateway — Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/static/dashboard.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wordmark">
+      <span class="wordmark-mark">AI·LG</span>
+      <div class="wordmark-text">
+        <span class="wordmark-title">AI Liability Gateway</span>
+        <span class="wordmark-sub">Contrôle · Preuve · Responsabilité contractuelle</span>
+      </div>
+    </div>
+    <div class="topbar-stats" id="topbarStats">
+      <div class="stat"><span class="stat-value" id="statTotal">–</span><span class="stat-label">actions journalisées</span></div>
+      <div class="stat stat-pending"><span class="stat-value" id="statPending">–</span><span class="stat-label">en attente d'humain</span></div>
+      <div class="stat stat-blocked"><span class="stat-value" id="statBlocked">–</span><span class="stat-label">bloquées</span></div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- Simulate an action -->
+    <section class="panel" id="panel-simulate">
+      <h2 class="panel-title">01 — Soumettre une action</h2>
+      <p class="panel-hint">Un agent propose une action. Le Risk Engine la note, le Policy Engine décide.</p>
+      <form id="actionForm" class="form-grid">
+        <label>Agent
+          <select name="agent_id" id="agentSelect" required></select>
+        </label>
+        <label>Type d'action
+          <select name="action_type" id="actionTypeSelect" required>
+            <option value="chat_response">chat_response</option>
+            <option value="draft_email">draft_email</option>
+            <option value="read_crm">read_crm</option>
+            <option value="create_ticket">create_ticket</option>
+            <option value="modify_crm">modify_crm</option>
+            <option value="refund">refund</option>
+            <option value="wire_transfer">wire_transfer</option>
+            <option value="delete_data">delete_data</option>
+            <option value="machine_control">machine_control</option>
+            <option value="vehicle_control">vehicle_control</option>
+          </select>
+        </label>
+        <label>Montant (€, optionnel)
+          <input type="number" name="amount" id="amountInput" placeholder="ex. 14500" />
+        </label>
+        <label class="span-2">Description / prompt
+          <input type="text" name="description" id="descInput" placeholder="ex. Rembourser le client suite à colis endommagé" />
+        </label>
+        <label class="span-2">Paramètres techniques (JSON, optionnel — ex. {"rpm": 8000})
+          <input type="text" name="parameters" id="paramsInput" placeholder='{"rpm": 8000}' />
+        </label>
+        <button type="submit" class="btn-primary span-2">Soumettre au gateway</button>
+      </form>
+      <div id="actionResult" class="action-result hidden"></div>
+    </section>
+
+    <!-- Escalation queue -->
+    <section class="panel" id="panel-escalations">
+      <h2 class="panel-title">02 — File d'escalade humaine</h2>
+      <p class="panel-hint">Actions bloquées par le seuil de risque ou de montant, en attente d'un opérateur.</p>
+      <div id="escalationList" class="stamp-list">
+        <p class="empty-state">Aucune escalade en attente.</p>
+      </div>
+    </section>
+
+    <!-- AI Passports -->
+    <section class="panel" id="panel-passports">
+      <h2 class="panel-title">03 — Passeports IA</h2>
+      <p class="panel-hint">Le contrat de chaque agent : modèle, seuils, assurance, opérateur.</p>
+      <div id="passportList" class="passport-grid"></div>
+    </section>
+
+    <!-- Audit log -->
+    <section class="panel panel-wide" id="panel-audit">
+      <h2 class="panel-title">04 — Journal d'audit</h2>
+      <p class="panel-hint">Chaque décision, horodatée et prouvable. Les 50 dernières entrées.</p>
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th>Horodatage</th><th>Agent</th><th>Action</th><th>Montant</th>
+              <th>Risque</th><th>Décision</th><th>Modèle</th><th>Motif</th>
+            </tr>
+          </thead>
+          <tbody id="auditBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">MVP local — SQLite, aucune donnée ne quitte cette machine. Refresh manuel via le bouton en haut à droite.</footer>
+  <button id="refreshBtn" class="refresh-fab" title="Rafraîchir">⟳</button>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "acme-faq-bot": {
+    "name": "ACME FAQ Bot",
+    "tier": "AI SAFE",
+    "model": "claude-haiku",
+    "fallback_model": "mock-local",
+    "max_autonomous_amount": 0,
+    "required_human_approval_above": 60,
+    "blocked_action_types": ["wire_transfer", "delete_data", "machine_control", "vehicle_control"],
+    "hard_constraints": {},
+    "insurance_coverage_eur": 250000,
+    "human_operator": "mutualisé (1 opérateur / 50 agents)",
+    "risk_weights": {"finance": 1, "legal": 1, "privacy": 1, "cyber": 1, "autonomy": 1, "physical": 1}
+  },
+  "acme-customer-agent": {
+    "name": "ACME Customer Agent",
+    "tier": "AI GUARANTEE",
+    "model": "claude-sonnet",
+    "fallback_model": "mock-gpt",
+    "max_autonomous_amount": 500,
+    "required_human_approval_above": 40,
+    "blocked_action_types": ["machine_control", "vehicle_control"],
+    "hard_constraints": {},
+    "insurance_coverage_eur": 2000000,
+    "human_operator": "assigné",
+    "risk_weights": {"finance": 1.5, "legal": 1, "privacy": 1, "cyber": 1, "autonomy": 1, "physical": 1}
+  },
+  "acme-cnc-controller": {
+    "name": "ACME CNC Line Controller",
+    "tier": "AI CRITICAL",
+    "model": "claude-sonnet",
+    "fallback_model": "mock-local",
+    "max_autonomous_amount": 0,
+    "required_human_approval_above": 20,
+    "blocked_action_types": ["delete_data", "wire_transfer"],
+    "hard_constraints": {"rpm": 4000, "temperature_c": 90},
+    "insurance_coverage_eur": 20000000,
+    "human_operator": "assigné, astreinte 24/7",
+    "risk_weights": {"finance": 0.5, "legal": 1, "privacy": 0.5, "cyber": 1, "autonomy": 1.5, "physical": 2.5}
+  }
+}
