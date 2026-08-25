@@ -1,6 +1,0 @@
-{
-  "name": "AI Liability Gateway",
-  "description": "Risk engine, deterministic policy enforcement, model router, and audit ledger for AI agent actions",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
