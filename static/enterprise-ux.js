@@ -1,29 +1,139 @@
 (() => {
-  const nav=[['overview','Overview'],['agents','Agents'],['policies','Policies'],['escalations','Reviews'],['incidents','Incidents'],['audit','Audit'],['sandbox','Sandbox'],['passport','AI Passport'],['settings','Settings']];
-  const style=document.createElement('style');
-  style.textContent=`
+  const nav = [
+    ['overview','Overview'],['agents','Agents'],['policies','Policies'],['escalations','Reviews'],
+    ['incidents','Incidents'],['audit','Audit'],['sandbox','Sandbox'],['passport','AI Passport'],['settings','Settings']
+  ];
+  const keymap = {o:'overview',a:'agents',p:'policies',r:'escalations',i:'incidents',u:'audit',s:'sandbox'};
+
+  const style = document.createElement('style');
+  style.textContent = `
     .ux-command-backdrop{position:fixed;inset:0;z-index:300;display:grid;place-items:start center;padding-top:13vh;background:rgba(16,20,26,.34);backdrop-filter:blur(6px)}
-    .ux-command-backdrop.hidden{display:none!important}.ux-command{width:min(560px,calc(100vw - 28px));background:#fff;border:1px solid #dfe3e9;border-radius:12px;box-shadow:0 30px 90px rgba(16,24,40,.22);overflow:hidden}
-    .ux-command-search{height:52px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #e8ebef;color:#7d8692}.ux-command-search span{font:14px ui-monospace,monospace}.ux-command-search input{border:0!important;box-shadow:none!important;outline:0;width:100%;height:100%;font-size:13px;background:transparent}.ux-command-list{padding:7px;max-height:360px;overflow:auto}.ux-command-item{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;border-radius:7px;padding:9px 10px;color:#3f4752;text-align:left;font-size:11px}.ux-command-item:hover,.ux-command-item.is-selected{background:#f2f5f8;color:#171a1f}.ux-command-icon{width:17px;color:#7d8793;font-family:ui-monospace,monospace}.ux-command-key{margin-left:auto;color:#a0a7b1;font:9px ui-monospace,monospace}.ux-command-empty{padding:28px 12px;text-align:center;color:#8a929d;font-size:10px}.ux-command-footer{display:flex;align-items:center;gap:7px;padding:9px 12px;border-top:1px solid #e8ebef;color:#8b939e;font-size:8px}.ux-command-footer kbd{font:8px ui-monospace,monospace;border:1px solid #dfe3e9;border-radius:4px;padding:2px 5px;background:#fafbfc}
-    .global-search-bar[role=button]{cursor:pointer}.global-search-bar[role=button] input{pointer-events:none}.form-group.ux-field-focus label{color:#1d4ed8}.nav-item[data-view=actions],.nav-item[data-view=risk]{display:none}
+    .ux-command-backdrop.hidden{display:none!important}.ux-command{width:min(590px,calc(100vw - 28px));background:#fff;border:1px solid #dfe3e9;border-radius:12px;box-shadow:0 30px 90px rgba(16,24,40,.22);overflow:hidden}
+    .ux-command-search{height:54px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #e8ebef;color:#7d8692}.ux-command-search span{font:14px ui-monospace,monospace}.ux-command-search input{border:0!important;box-shadow:none!important;outline:0;width:100%;height:100%;font-size:13px;background:transparent}
+    .ux-command-list{padding:7px;max-height:390px;overflow:auto}.ux-command-group{padding:7px 9px 4px;color:#a0a7b1;font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.ux-command-item{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;border-radius:7px;padding:9px 10px;color:#3f4752;text-align:left;font-size:11px}.ux-command-item:hover,.ux-command-item.is-selected{background:#f2f5f8;color:#171a1f}.ux-command-icon{width:17px;color:#7d8793;font-family:ui-monospace,monospace}.ux-command-key{margin-left:auto;color:#a0a7b1;font:9px ui-monospace,monospace}.ux-command-empty{padding:28px 12px;text-align:center;color:#8a929d;font-size:10px}.ux-command-footer{display:flex;align-items:center;gap:7px;padding:9px 12px;border-top:1px solid #e8ebef;color:#8b939e;font-size:8px}.ux-command-footer kbd{font:8px ui-monospace,monospace;border:1px solid #dfe3e9;border-radius:4px;padding:2px 5px;background:#fafbfc}
+    .global-search-bar[role=button]{cursor:pointer}.global-search-bar[role=button] input{pointer-events:none}.form-group.ux-field-focus label{color:#1d4ed8}
+    .sidebar.ux-collapsed{width:68px;flex-basis:68px;padding-left:7px;padding-right:7px}.sidebar.ux-collapsed .sidebar-section-title,.sidebar.ux-collapsed .nav-item span,.sidebar.ux-collapsed .cluster-status-card,.sidebar.ux-collapsed .sidebar-onboarding-box{display:none}.sidebar.ux-collapsed .nav-item{justify-content:center;padding-left:0;padding-right:0}.sidebar.ux-collapsed .nav-item svg{opacity:.82}.sidebar.ux-collapsed .nav-counter{display:none}.sidebar.ux-collapsed + .main-content{padding-left:38px}.ux-sidebar-toggle{position:absolute;right:-11px;top:69px;width:22px;height:22px;border:1px solid #dfe3e9;background:#fff;border-radius:50%;display:grid;place-items:center;color:#7d8692;z-index:65;box-shadow:0 2px 8px rgba(16,24,40,.08)}.sidebar{position:relative;transition:width .16s ease,padding .16s ease}.ux-kbd-hint{font:8px ui-monospace,monospace;color:#9aa2ad;margin-left:auto}
+    .ux-decision-row{transition:background .12s ease}.ux-decision-row:focus-within{background:#f8fafc}.ux-action-link{color:#4b5563;text-decoration:none;border-bottom:1px dashed #cbd1d9}.ux-action-link:hover{color:#1d4ed8;border-bottom-color:#9fb5da}
+    @media(max-width:800px){.sidebar.ux-collapsed{width:255px;flex-basis:255px}.sidebar.ux-collapsed .sidebar-section-title,.sidebar.ux-collapsed .nav-item span,.sidebar.ux-collapsed .cluster-status-card,.sidebar.ux-collapsed .sidebar-onboarding-box{display:block}.sidebar.ux-collapsed .nav-item{justify-content:flex-start;padding-left:9px;padding-right:9px}.ux-sidebar-toggle{display:none}.sidebar.ux-collapsed + .main-content{padding-left:15px}}
+    @media(prefers-reduced-motion:reduce){.sidebar{transition:none}}
   `;
   document.documentElement.appendChild(style);
 
-  function installPalette(){
-    if(document.getElementById('commandPalette')) return;
-    const el=document.createElement('div');el.id='commandPalette';el.className='ux-command-backdrop hidden';
-    el.innerHTML='<div class="ux-command" role="dialog" aria-modal="true" aria-label="Command palette"><div class="ux-command-search"><span>⌘</span><input id="uxCommandInput" autocomplete="off" placeholder="Jump to a control, agent, policy…"></div><div class="ux-command-list" id="uxCommandList"></div><div class="ux-command-footer"><span>Navigate</span><kbd>↑↓</kbd><span>Select</span><kbd>↵</kbd><span>Close</span><kbd>Esc</kbd></div></div>';
+  let paletteIndex = 0;
+  let paletteMatches = [];
+
+  function installPalette() {
+    if (document.getElementById('commandPalette')) return;
+    const el = document.createElement('div');
+    el.id = 'commandPalette';
+    el.className = 'ux-command-backdrop hidden';
+    el.innerHTML = `<div class="ux-command" role="dialog" aria-modal="true" aria-label="Command palette">
+      <div class="ux-command-search"><span>⌘</span><input id="uxCommandInput" autocomplete="off" placeholder="Search navigation and actions…"></div>
+      <div class="ux-command-list" id="uxCommandList"></div>
+      <div class="ux-command-footer"><span>Navigate</span><kbd>↑↓</kbd><span>Select</span><kbd>↵</kbd><span>Close</span><kbd>Esc</kbd><span class="ux-kbd-hint">⌘K anytime</span></div>
+    </div>`;
     document.body.appendChild(el);
-    const input=el.querySelector('#uxCommandInput'),list=el.querySelector('#uxCommandList');let index=0;
-    const render=()=>{const q=input.value.trim().toLowerCase();const matches=nav.filter(([,label])=>label.toLowerCase().includes(q));index=Math.max(0,Math.min(index,matches.length-1));list.innerHTML=matches.length?matches.map(([id,label],i)=>`<button class="ux-command-item ${i===index?'is-selected':''}" data-command="${id}"><span class="ux-command-icon">${i===index?'→':'·'}</span><span>${label}</span><span class="ux-command-key">${i+1}</span></button>`).join(''):'<div class="ux-command-empty">No destination matches your search.</div>';list.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>{navigateTo(b.dataset.command);close();});};
-    const open=()=>{el.classList.remove('hidden');input.value='';index=0;render();requestAnimationFrame(()=>input.focus());};const close=()=>el.classList.add('hidden');window.__openCommandPalette=open;window.__closeCommandPalette=close;
-    input.oninput=()=>{index=0;render()};input.onkeydown=e=>{const items=list.querySelectorAll('[data-command]');if(e.key==='ArrowDown'){e.preventDefault();index=Math.min(index+1,items.length-1);render()}else if(e.key==='ArrowUp'){e.preventDefault();index=Math.max(index-1,0);render()}else if(e.key==='Enter'){e.preventDefault();items[index]?.click()}else if(e.key==='Escape')close()};el.onclick=e=>{if(e.target===el)close()};
+    const input = el.querySelector('#uxCommandInput');
+    const list = el.querySelector('#uxCommandList');
+
+    const actions = [
+      ['Navigation','Overview','overview'],['Navigation','Agents','agents'],['Navigation','Policies','policies'],
+      ['Navigation','Reviews','escalations'],['Navigation','Incidents','incidents'],['Navigation','Audit','audit'],
+      ['Navigation','Sandbox','sandbox'],['Navigation','AI Passport','passport'],['Navigation','Settings','settings'],
+      ['Actions','Refresh gateway telemetry','__refresh'],['Actions','Collapse / expand sidebar','__sidebar']
+    ];
+
+    const render = () => {
+      const q = input.value.trim().toLowerCase();
+      paletteMatches = actions.filter(([,label]) => label.toLowerCase().includes(q));
+      paletteIndex = Math.max(0, Math.min(paletteIndex, paletteMatches.length - 1));
+      let lastGroup = '';
+      list.innerHTML = paletteMatches.length ? paletteMatches.map((item,i) => {
+        const [group,label,id] = item;
+        const heading = group !== lastGroup ? `<div class="ux-command-group">${group}</div>` : '';
+        lastGroup = group;
+        return heading + `<button class="ux-command-item ${i===paletteIndex?'is-selected':''}" data-command="${id}"><span class="ux-command-icon">${i===paletteIndex?'→':'·'}</span><span>${label}</span><span class="ux-command-key">${id.length<4?id:''}</span></button>`;
+      }).join('') : '<div class="ux-command-empty">No command matches your search.</div>';
+      list.querySelectorAll('[data-command]').forEach(b => b.onclick = () => executeCommand(b.dataset.command));
+    };
+    const open = () => { el.classList.remove('hidden'); input.value=''; paletteIndex=0; render(); requestAnimationFrame(() => input.focus()); };
+    const close = () => { el.classList.add('hidden'); };
+    window.__openCommandPalette = open; window.__closeCommandPalette = close;
+    input.oninput = () => { paletteIndex=0; render(); };
+    input.onkeydown = e => {
+      if(e.key==='ArrowDown'){e.preventDefault();paletteIndex=Math.min(paletteIndex+1,paletteMatches.length-1);render();}
+      else if(e.key==='ArrowUp'){e.preventDefault();paletteIndex=Math.max(paletteIndex-1,0);render();}
+      else if(e.key==='Enter'){e.preventDefault();paletteMatches[paletteIndex] && executeCommand(paletteMatches[paletteIndex][2]);}
+      else if(e.key==='Escape'){e.preventDefault();close();}
+    };
+    el.onclick = e => { if(e.target===el) close(); };
   }
+
+  function executeCommand(id){
+    window.__closeCommandPalette?.();
+    if(id === '__refresh'){ window.refreshAllData?.(true); return; }
+    if(id === '__sidebar'){ toggleSidebar(); return; }
+    if(document.getElementById(`view-${id}`)) navigateTo(id);
+  }
+
+  function toggleSidebar(){
+    const sidebar = document.getElementById('sidebar');
+    if(!sidebar) return;
+    if(window.innerWidth <= 800){ sidebar.classList.toggle('mobile-open'); return; }
+    sidebar.classList.toggle('ux-collapsed');
+    const collapsed = sidebar.classList.contains('ux-collapsed');
+    localStorage.setItem('ailg.sidebarCollapsed', collapsed ? '1' : '0');
+  }
+
+  function installSidebarControl(){
+    const sidebar = document.getElementById('sidebar');
+    if(!sidebar || sidebar.querySelector('.ux-sidebar-toggle')) return;
+    if(localStorage.getItem('ailg.sidebarCollapsed') === '1' && window.innerWidth > 800) sidebar.classList.add('ux-collapsed');
+    const btn=document.createElement('button');btn.className='ux-sidebar-toggle';btn.type='button';btn.setAttribute('aria-label','Collapse sidebar');btn.title='Collapse sidebar';btn.innerHTML='‹';
+    btn.onclick=toggleSidebar;sidebar.appendChild(btn);
+  }
+
+  function installSearch(){
+    const bar=document.getElementById('globalSearchBar');
+    if(!bar || bar.dataset.uxReady) return;
+    bar.dataset.uxReady='1';bar.setAttribute('role','button');bar.setAttribute('tabindex','0');bar.setAttribute('aria-label','Open command palette');
+    bar.onclick=()=>window.__openCommandPalette?.();
+    bar.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();window.__openCommandPalette?.();}};
+    const input=bar.querySelector('input');if(input) input.tabIndex=-1;
+  }
+
+  function installSelectFocus(){
+    document.querySelectorAll('select').forEach(s=>{if(s.dataset.uxReady)return;s.dataset.uxReady='1';s.onfocus=()=>s.closest('.form-group')?.classList.add('ux-field-focus');s.onblur=()=>s.closest('.form-group')?.classList.remove('ux-field-focus');});
+  }
+
+  function improveOverview(){
+    const title=document.querySelector('#view-overview .page-title');
+    const sub=document.querySelector('#view-overview .page-subtitle');
+    if(title) title.textContent='Fleet';
+    if(sub) sub.textContent='Operational control across your AI agents.';
+  }
+
+  function installKeyboardNavigation(){
+    if(document.body.dataset.uxKeys) return;
+    document.body.dataset.uxKeys='1';
+    let sequence=false;
+    document.addEventListener('keydown',e=>{
+      if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();window.__openCommandPalette?.();return;}
+      if(e.key==='Escape'){window.__closeCommandPalette?.();return;}
+      const target=e.target;
+      if(target && (target.matches('input,textarea,select') || target.isContentEditable)) return;
+      if(e.key.toLowerCase()==='g'){sequence=true;setTimeout(()=>sequence=false,900);return;}
+      if(sequence){const id=keymap[e.key.toLowerCase()];if(id){e.preventDefault();navigateTo(id);}sequence=false;}
+    });
+  }
+
   function install(){
-    installPalette();
-    const bar=document.getElementById('globalSearchBar');if(bar&&!bar.dataset.ux){bar.dataset.ux='1';bar.setAttribute('role','button');bar.setAttribute('tabindex','0');bar.setAttribute('aria-label','Open command palette');bar.onclick=()=>window.__openCommandPalette?.();bar.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();window.__openCommandPalette?.()}}}
-    document.querySelectorAll('select').forEach(s=>{if(s.dataset.ux)return;s.dataset.ux='1';s.onfocus=()=>s.closest('.form-group')?.classList.add('ux-field-focus');s.onblur=()=>s.closest('.form-group')?.classList.remove('ux-field-focus')});
-    const title=document.querySelector('#view-overview .page-title'),sub=document.querySelector('#view-overview .page-subtitle');if(title)title.textContent='Fleet';if(sub)sub.textContent='Operational control across your AI agents.';
+    installPalette();installSidebarControl();installSearch();installSelectFocus();improveOverview();installKeyboardNavigation();
   }
-  document.addEventListener('DOMContentLoaded',()=>{install();document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();window.__openCommandPalette?.()}if(e.key==='Escape')window.__closeCommandPalette?.()});new MutationObserver(install).observe(document.body,{subtree:true,childList:true})});
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    install();
+    new MutationObserver(()=>install()).observe(document.body,{subtree:true,childList:true});
+    window.addEventListener('resize',()=>{if(window.innerWidth<=800)document.getElementById('sidebar')?.classList.remove('ux-collapsed');});
+  });
 })();
