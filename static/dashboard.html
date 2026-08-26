@@ -8,35 +8,20 @@
   <link rel="stylesheet" href="/static/dashboard.css" />
 </head>
 <body>
-  <!-- The existing dashboard markup remains intact; the lean console stylesheet controls the default information density. -->
-
-  <!-- ROOT APP SHELL -->
   <div id="app" class="app-container">
     <header class="topbar">
       <div class="topbar-left">
-        <button id="sidebarToggleBtn" class="icon-btn mobile-only" title="Toggle Navigation" type="button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-        </button>
-        <div class="brand-cluster" onclick="navigateTo('overview')">
-          <div class="brand-symbol"><img src="/static/conforva-mark.svg" alt="" width="18" height="18" /></div>
-          <div class="brand-text"><span class="brand-name">CONFORVA <span class="brand-badge">CONTROL PLANE</span></span><span class="brand-sub">Autonomous AI control infrastructure</span></div>
-        </div>
+        <button id="sidebarToggleBtn" class="icon-btn mobile-only" title="Toggle navigation" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+        <div class="brand-cluster" onclick="navigateTo('overview')" role="button" tabindex="0"><div class="brand-symbol"><img src="/static/conforva-mark.svg" alt="" width="18" height="18" /></div><div class="brand-text"><span class="brand-name">CONFORVA <span class="brand-badge">CONTROL PLANE</span></span><span class="brand-sub">Autonomous AI control infrastructure</span></div></div>
         <div class="org-selector"><span class="org-dot"></span><span class="org-label">Acme Global Fleet</span></div>
       </div>
-      <div class="topbar-center">
-        <div class="global-search-bar" id="globalSearchBar"><input type="text" id="globalSearchInput" placeholder="Search…" aria-label="Search" /><kbd class="shortcut-tag">⌘K</kbd></div>
-      </div>
+      <div class="topbar-center"><div class="global-search-bar" id="globalSearchBar"><input type="text" id="globalSearchInput" placeholder="Search…" aria-label="Search" /><kbd class="shortcut-tag">⌘K</kbd></div></div>
       <div class="topbar-right">
         <div class="status-pill status-healthy"><span class="pulse-dot"></span><span class="status-text">Control plane operational</span></div>
-        <button id="refreshDataBtn" class="icon-btn" title="Refresh" type="button" onclick="refreshAllData(true)">
-          <svg id="refreshSpinner" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-        </button>
-        <button class="icon-btn relative" title="Human reviews" type="button" onclick="navigateTo('escalations')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span id="topbarEscalationCount" class="badge-count hidden">0</span>
-        </button>
+        <button id="refreshDataBtn" class="icon-btn" title="Refresh" type="button" onclick="refreshAllData(true)"><svg id="refreshSpinner" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+        <button class="icon-btn relative" title="Human reviews" type="button" onclick="navigateTo('escalations')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span id="topbarEscalationCount" class="badge-count hidden">0</span></button>
       </div>
     </header>
-
     <div class="app-body">
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-section-title">CONTROL</div>
@@ -50,31 +35,28 @@
           <a href="#sandbox" class="nav-item" data-view="sandbox"><span>Sandbox</span></a>
         </nav>
       </aside>
-
       <main class="main-content">
-        <!-- Overview is intentionally small; advanced views are still rendered by the existing control-plane engine. -->
         <section id="view-overview" class="view-panel">
           <div class="page-header"><div><h1 class="page-title">Overview</h1><p class="page-subtitle">Agent health, decisions and issues that need attention.</p></div></div>
           <div class="metrics-strip">
             <div class="metric-card"><div class="metric-label">Active agents</div><div id="metricActiveAgents" class="metric-val">—</div></div>
             <div class="metric-card"><div class="metric-label">Open incidents</div><div id="metricOpenIncidents" class="metric-val">—</div></div>
+            <div class="metric-card" hidden><div id="metricTotalActions"></div></div><div class="metric-card" hidden><div id="metricBlockedActions"></div></div><div class="metric-card" hidden><div id="metricEscalatedActions"></div></div>
           </div>
+          <div hidden><span id="barAllowedVal"></span><span id="barBlockedVal"></span><span id="barEscalatedVal"></span><span id="barAllowedFill"></span><span id="barBlockedFill"></span><span id="barEscalatedFill"></span><span id="overviewAvgRiskScore"></span><div id="overviewRiskGrid"></div></div>
           <section class="panel" style="margin-top:18px"><div class="panel-header"><div><h2>Recent decisions</h2><p>Latest control-plane outcomes.</p></div><button class="btn-ghost btn-sm" type="button" onclick="navigateTo('actions')">View activity</button></div><div class="table-wrap"><table><tbody id="overviewDecisionsTbody"><tr><td>Loading…</td></tr></tbody></table></div></section>
-          <div id="overviewRiskGrid" hidden></div><div id="overviewAvgRiskScore" hidden></div>
         </section>
-
         <section id="view-agents" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Agents</h1><p class="page-subtitle">Production agents under control.</p></div><div id="agentsGrid" class="dashboard-grid-2"></div></section>
-        <section id="view-policies" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Policies</h1><p class="page-subtitle">Rules that determine what agents can do.</p></div><div id="policiesGrid"></div></section>
-        <section id="view-actions" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Activity</h1><p class="page-subtitle">Decision and execution history.</p></div><div id="actionsTable"></div></section>
-        <section id="view-risk" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Risk</h1></div><div id="riskDashboard"></div></section>
-        <section id="view-escalations" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Reviews</h1><p class="page-subtitle">Human decisions waiting for authorization.</p></div><div id="escalationsTable"></div></section>
-        <section id="view-incidents" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Incidents</h1></div><div id="incidentsTable"></div></section>
-        <section id="view-audit" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Audit</h1><p class="page-subtitle">Decision evidence and integrity.</p></div><div id="auditLedger"></div></section>
+        <section id="view-policies" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Policies</h1><p class="page-subtitle">Rules that determine what agents can do.</p></div><div id="policiesList"></div></section>
+        <section id="view-actions" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Activity</h1><p class="page-subtitle">Decision and execution history.</p></div><div class="panel"><div class="table-wrap"><table><tbody id="actionsTableBody"></tbody></table></div></div></section>
+        <section id="view-risk" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Risk</h1></div><div id="riskVectorsDetailedList"></div><div id="riskAgentsTableBody"></div></section>
+        <section id="view-escalations" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Reviews</h1><p class="page-subtitle">Human decisions waiting for authorization.</p></div><div class="panel"><div id="escalationsStream"></div></div><span id="escCountPending"></span><button id="tabEscPending" hidden></button><button id="tabEscResolved" hidden></button><button id="tabEscAll" hidden></button></section>
+        <section id="view-incidents" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Incidents</h1></div><div id="incidentsList"></div></section>
+        <section id="view-audit" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Audit</h1><p class="page-subtitle">Decision evidence and integrity.</p></div><div class="panel"><div class="table-wrap"><table><tbody id="auditLedgerTableBody"></tbody></table></div></div></section>
         <section id="view-sandbox" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Sandbox</h1><p class="page-subtitle">Evaluate an action before execution.</p></div><div id="sandboxContent"></div></section>
       </main>
     </div>
   </div>
-
   <script src="/static/dashboard.js"></script>
 </body>
 </html>
