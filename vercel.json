@@ -5,7 +5,7 @@
   "functions": {
     "api/index.ts": {
       "runtime": "@vercel/node",
-      "includeFiles": ["static/**", "config/**"]
+      "includeFiles": "static/**"
     }
   },
   "routes": [
