@@ -1,0 +1,69 @@
+/* Conforva Lean Console
+   Deliberately quiet: fewer surfaces, fewer controls, faster first paint. */
+:root {
+  --cf-bg: #f7f8fa;
+  --cf-surface: #fff;
+  --cf-line: #e5e7eb;
+  --cf-text: #17191d;
+  --cf-muted: #737985;
+  --cf-accent: #2563eb;
+}
+
+html[data-product="conforva"], html[data-product="conforva"] body { background: var(--cf-bg); color: var(--cf-text); }
+html[data-product="conforva"] body { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+/* One primary navigation. Advanced areas remain available from direct routes,
+   but the default console does not make users scan a wall of links. */
+[data-product="conforva"] .sidebar-section-title:nth-of-type(n+2),
+[data-product="conforva"] .nav-item[data-view="actions"],
+[data-product="conforva"] .nav-item[data-view="risk"],
+[data-product="conforva"] .nav-item[data-view="passport"],
+[data-product="conforva"] .nav-item[data-view="quickstart"],
+[data-product="conforva"] .nav-item[data-view="usage"],
+[data-product="conforva"] .nav-item[data-view="integrations"],
+[data-product="conforva"] .nav-item[data-view="api-keys"],
+[data-product="conforva"] .nav-item[data-view="settings"] { display:none !important; }
+
+[data-product="conforva"] .sidebar { width: 196px; }
+[data-product="conforva"] .main-content { max-width: 1280px; padding: 30px 34px 56px; }
+[data-product="conforva"] .topbar { padding-inline: 22px; }
+[data-product="conforva"] .global-search-bar { width: min(360px, 34vw); }
+[data-product="conforva"] .user-profile-menu { display:none; }
+[data-product="conforva"] .landing-toggle-btn { display:none; }
+
+/* Keep the overview to the few signals that matter. */
+[data-product="conforva"] #view-overview .metric-card:nth-child(n+3) { display:none; }
+[data-product="conforva"] #view-overview .metrics-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+[data-product="conforva"] #view-overview #overviewRiskGrid,
+[data-product="conforva"] #view-overview #overviewAvgRiskScore,
+[data-product="conforva"] #view-overview .risk-vector-grid,
+[data-product="conforva"] #view-overview .activity-bars,
+[data-product="conforva"] #view-overview .overview-risk,
+[data-product="conforva"] #view-overview .overview-activity { display:none !important; }
+
+/* Less chrome everywhere. */
+[data-product="conforva"] .metric-card,
+[data-product="conforva"] .panel,
+[data-product="conforva"] .agent-card,
+[data-product="conforva"] .spec-box { box-shadow:none !important; border-color: var(--cf-line); }
+[data-product="conforva"] .panel { border-radius: 10px; }
+[data-product="conforva"] button { transition: background .12s ease, border-color .12s ease, transform .12s ease; }
+[data-product="conforva"] button:active { transform: translateY(1px); }
+
+/* Don't run decorative motion on the console. */
+[data-product="conforva"] .pulse-dot { animation:none !important; }
+
+@media (max-width: 800px) {
+  [data-product="conforva"] .sidebar { width: 220px; }
+  [data-product="conforva"] .main-content { padding: 22px 16px 40px; }
+  [data-product="conforva"] .global-search-bar { display:none; }
+  [data-product="conforva"] #view-overview .metrics-strip { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-product="conforva"] *, [data-product="conforva"] *::before, [data-product="conforva"] *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
