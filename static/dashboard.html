@@ -3,60 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Conforva control plane for autonomous AI agents." />
   <title>Conforva — Control Plane</title>
   <link rel="icon" href="/static/conforva-mark.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/static/dashboard.css" />
+  <link rel="stylesheet" href="/static/lean-console.css" />
 </head>
 <body>
-  <div id="app" class="app-container">
-    <header class="topbar">
-      <div class="topbar-left">
-        <button id="sidebarToggleBtn" class="icon-btn mobile-only" title="Toggle navigation" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
-        <div class="brand-cluster" onclick="navigateTo('overview')" role="button" tabindex="0"><div class="brand-symbol"><img src="/static/conforva-mark.svg" alt="" width="18" height="18" /></div><div class="brand-text"><span class="brand-name">CONFORVA <span class="brand-badge">CONTROL PLANE</span></span><span class="brand-sub">Autonomous AI control infrastructure</span></div></div>
-        <div class="org-selector"><span class="org-dot"></span><span class="org-label">Acme Global Fleet</span></div>
-      </div>
-      <div class="topbar-center"><div class="global-search-bar" id="globalSearchBar"><input type="text" id="globalSearchInput" placeholder="Search…" aria-label="Search" /><kbd class="shortcut-tag">⌘K</kbd></div></div>
-      <div class="topbar-right">
-        <div class="status-pill status-healthy"><span class="pulse-dot"></span><span class="status-text">Control plane operational</span></div>
-        <button id="refreshDataBtn" class="icon-btn" title="Refresh" type="button" onclick="refreshAllData(true)"><svg id="refreshSpinner" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
-        <button class="icon-btn relative" title="Human reviews" type="button" onclick="navigateTo('escalations')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span id="topbarEscalationCount" class="badge-count hidden">0</span></button>
-      </div>
-    </header>
-    <div class="app-body">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-section-title">CONTROL</div>
-        <nav class="sidebar-nav" aria-label="Primary">
-          <a href="#overview" class="nav-item active" data-view="overview"><span>Overview</span></a>
-          <a href="#agents" class="nav-item" data-view="agents"><span>Agents</span><span class="nav-counter" id="navAgentCount">0</span></a>
-          <a href="#policies" class="nav-item" data-view="policies"><span>Policies</span><span class="nav-counter" id="navPolicyCount">0</span></a>
-          <a href="#escalations" class="nav-item" data-view="escalations"><span>Reviews</span><span class="nav-counter alert-counter" id="navEscalationCount">0</span></a>
-          <a href="#incidents" class="nav-item" data-view="incidents"><span>Incidents</span><span class="nav-counter" id="navIncidentCount">0</span></a>
-          <a href="#audit" class="nav-item" data-view="audit"><span>Audit</span></a>
-          <a href="#sandbox" class="nav-item" data-view="sandbox"><span>Sandbox</span></a>
-        </nav>
-      </aside>
-      <main class="main-content">
-        <section id="view-overview" class="view-panel">
-          <div class="page-header"><div><h1 class="page-title">Overview</h1><p class="page-subtitle">Agent health, decisions and issues that need attention.</p></div></div>
-          <div class="metrics-strip">
-            <div class="metric-card"><div class="metric-label">Active agents</div><div id="metricActiveAgents" class="metric-val">—</div></div>
-            <div class="metric-card"><div class="metric-label">Open incidents</div><div id="metricOpenIncidents" class="metric-val">—</div></div>
-            <div class="metric-card" hidden><div id="metricTotalActions"></div></div><div class="metric-card" hidden><div id="metricBlockedActions"></div></div><div class="metric-card" hidden><div id="metricEscalatedActions"></div></div>
-          </div>
-          <div hidden><span id="barAllowedVal"></span><span id="barBlockedVal"></span><span id="barEscalatedVal"></span><span id="barAllowedFill"></span><span id="barBlockedFill"></span><span id="barEscalatedFill"></span><span id="overviewAvgRiskScore"></span><div id="overviewRiskGrid"></div></div>
-          <section class="panel" style="margin-top:18px"><div class="panel-header"><div><h2>Recent decisions</h2><p>Latest control-plane outcomes.</p></div><button class="btn-ghost btn-sm" type="button" onclick="navigateTo('actions')">View activity</button></div><div class="table-wrap"><table><tbody id="overviewDecisionsTbody"><tr><td>Loading…</td></tr></tbody></table></div></section>
-        </section>
-        <section id="view-agents" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Agents</h1><p class="page-subtitle">Production agents under control.</p></div><div id="agentsGrid" class="dashboard-grid-2"></div></section>
-        <section id="view-policies" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Policies</h1><p class="page-subtitle">Rules that determine what agents can do.</p></div><div id="policiesList"></div></section>
-        <section id="view-actions" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Activity</h1><p class="page-subtitle">Decision and execution history.</p></div><div class="panel"><div class="table-wrap"><table><tbody id="actionsTableBody"></tbody></table></div></div></section>
-        <section id="view-risk" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Risk</h1></div><div id="riskVectorsDetailedList"></div><div id="riskAgentsTableBody"></div></section>
-        <section id="view-escalations" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Reviews</h1><p class="page-subtitle">Human decisions waiting for authorization.</p></div><div class="panel"><div id="escalationsStream"></div></div><span id="escCountPending"></span><button id="tabEscPending" hidden></button><button id="tabEscResolved" hidden></button><button id="tabEscAll" hidden></button></section>
-        <section id="view-incidents" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Incidents</h1></div><div id="incidentsList"></div></section>
-        <section id="view-audit" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Audit</h1><p class="page-subtitle">Decision evidence and integrity.</p></div><div class="panel"><div class="table-wrap"><table><tbody id="auditLedgerTableBody"></tbody></table></div></div></section>
-        <section id="view-sandbox" class="view-panel hidden"><div class="page-header"><h1 class="page-title">Sandbox</h1><p class="page-subtitle">Evaluate an action before execution.</p></div><div id="sandboxContent"></div></section>
-      </main>
+<div id="app" class="app-container">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button id="sidebarToggleBtn" class="icon-btn mobile-only" type="button" aria-label="Open navigation">☰</button>
+      <button class="brand-cluster" onclick="navigateTo('overview')" type="button" aria-label="Conforva overview">
+        <span class="brand-symbol"><img src="/static/conforva-mark.svg" alt="" width="18" height="18"></span>
+        <span class="brand-text"><span class="brand-name">CONFORVA</span><span class="brand-sub">AI control plane</span></span>
+      </button>
     </div>
+    <div class="topbar-right">
+      <div class="status-pill status-healthy"><span class="pulse-dot"></span><span class="status-text">Operational</span></div>
+      <button id="refreshDataBtn" class="icon-btn" title="Refresh data" aria-label="Refresh data" type="button" onclick="refreshAllData(true)"><span id="refreshSpinner">↻</span></button>
+    </div>
+  </header>
+  <div class="app-body">
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav" aria-label="Primary">
+        <div class="sidebar-section-title">CONTROL</div>
+        <a href="#overview" class="nav-item active" data-view="overview"><span>Overview</span></a>
+        <a href="#agents" class="nav-item" data-view="agents"><span>Agents</span><span class="nav-counter" id="navAgentCount">0</span></a>
+        <a href="#policies" class="nav-item" data-view="policies"><span>Policies</span><span class="nav-counter" id="navPolicyCount">0</span></a>
+        <a href="#escalations" class="nav-item" data-view="escalations"><span>Reviews</span><span class="nav-counter alert-counter" id="navEscalationCount">0</span></a>
+        <div class="sidebar-section-title">EVIDENCE</div>
+        <a href="#incidents" class="nav-item" data-view="incidents"><span>Incidents</span><span class="nav-counter" id="navIncidentCount">0</span></a>
+        <a href="#audit" class="nav-item" data-view="audit"><span>Audit</span></a>
+        <a href="#sandbox" class="nav-item" data-view="sandbox"><span>Sandbox</span></a>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <section id="view-overview" class="view-panel">
+        <div class="page-header"><div><h1 class="page-title">Overview</h1><p class="page-subtitle">Your control plane at a glance.</p></div></div>
+        <div class="metrics-strip">
+          <div class="metric-card"><div class="metric-label">Active agents</div><div id="metricActiveAgents" class="metric-val">—</div></div>
+          <div class="metric-card"><div class="metric-label">Open incidents</div><div id="metricOpenIncidents" class="metric-val">—</div></div>
+        </div>
+        <section class="panel recent-panel"><div class="panel-header"><div><h2>Recent decisions</h2><p>What the control plane decided most recently.</p></div><button class="btn-ghost btn-sm" type="button" onclick="navigateTo('actions')">View all</button></div><div class="table-wrap"><table><tbody id="overviewDecisionsTbody"><tr><td>Loading…</td></tr></tbody></table></div></section>
+      </section>
+      <section id="view-agents" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Agents</h1><p class="page-subtitle">Production agents under control.</p></div></div><div id="agentsGrid" class="dashboard-grid-2"></div></section>
+      <section id="view-policies" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Policies</h1><p class="page-subtitle">Rules that determine what agents can do.</p></div></div><div id="policiesList"></div></section>
+      <section id="view-actions" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Activity</h1><p class="page-subtitle">Decision and execution history.</p></div></div><div class="panel"><div class="table-wrap"><table><tbody id="actionsTableBody"></tbody></table></div></div></section>
+      <section id="view-risk" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Risk</h1></div></div><div id="riskVectorsDetailedList"></div><div id="riskAgentsTableBody"></div></section>
+      <section id="view-escalations" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Reviews</h1><p class="page-subtitle">Human decisions waiting for authorization.</p></div></div><div class="panel"><div id="escalationsStream"></div></div><span id="escCountPending" hidden></span><button id="tabEscPending" hidden></button><button id="tabEscResolved" hidden></button><button id="tabEscAll" hidden></button></section>
+      <section id="view-incidents" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Incidents</h1></div></div><div id="incidentsList"></div></section>
+      <section id="view-audit" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Audit</h1><p class="page-subtitle">Decision evidence and integrity.</p></div></div><div class="panel"><div class="table-wrap"><table><tbody id="auditLedgerTableBody"></tbody></table></div></div></section>
+      <section id="view-sandbox" class="view-panel hidden"><div class="page-header"><div><h1 class="page-title">Sandbox</h1><p class="page-subtitle">Evaluate an action before execution.</p></div></div><div id="sandboxContent"></div></section>
+    </main>
   </div>
-  <script src="/static/dashboard.js"></script>
+</div>
+<script src="/static/dashboard.js"></script>
 </body>
 </html>
