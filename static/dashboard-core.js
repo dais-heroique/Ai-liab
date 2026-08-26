@@ -1,113 +1,17 @@
-/* Conforva Control Plane — lean core */
-const state = window.conforvaState || {
-  currentView: 'overview', overview: {}, agents: [], policies: [], actions: [],
-  escalations: [], incidents: [], apiKeys: [], integrations: [], usage: null
-};
-window.conforvaState = state;
-window.state = state;
-
-function $(id) { return document.getElementById(id); }
-function safeArray(value) { return Array.isArray(value) ? value : []; }
-function json(res) { return res && res.ok ? res.json() : null; }
-
-function initDashboard() {
-  setupNavigation();
-  setupSidebarToggle();
-  refreshAllData(false);
-}
-
-function setupNavigation() {
-  const apply = () => {
-    const view = location.hash.slice(1) || 'overview';
-    navigateTo($(`view-${view}`) ? view : 'overview', false);
-  };
-  document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => {
-    navigateTo(item.dataset.view);
-  }));
-  window.addEventListener('hashchange', apply);
-  apply();
-}
-
-function navigateTo(viewId, updateHash = true) {
-  if (!$(`view-${viewId}`)) return;
-  state.currentView = viewId;
-  if (updateHash && location.hash.slice(1) !== viewId) history.pushState(null, '', `#${viewId}`);
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.view === viewId));
-  document.querySelectorAll('.view-panel').forEach(panel => panel.classList.toggle('hidden', panel.id !== `view-${viewId}`));
-  $('sidebar')?.classList.remove('mobile-open');
-}
-window.navigateTo = navigateTo;
-
-function setupSidebarToggle() {
-  $('sidebarToggleBtn')?.addEventListener('click', () => $('sidebar')?.classList.toggle('mobile-open'));
-}
-
-async function refreshAllData(showNotification = false) {
-  const spinner = $('refreshSpinner');
-  $('refreshDataBtn')?.setAttribute('aria-busy', 'true');
-  spinner?.classList.add('spinning');
-  try {
-    const endpoints = {
-      overview: '/v1/overview', agents: '/v1/agents', policies: '/v1/policies',
-      actions: '/v1/audit?limit=25', escalations: '/v1/escalations?status=all',
-      incidents: '/v1/incidents'
-    };
-    const entries = await Promise.all(Object.entries(endpoints).map(async ([key, url]) => {
-      try { return [key, await json(await fetch(url, { headers: { Accept: 'application/json' } }))]; }
-      catch { return [key, null]; }
-    }));
-    for (const [key, value] of entries) if (value !== null) state[key] = key === 'overview' ? (value || {}) : safeArray(value);
-    renderOverview(); renderAgents(); renderPolicies(); renderActions(); renderEscalations(); renderIncidents(); renderAuditLedger();
-    if (showNotification && typeof showToast === 'function') showToast('Control plane refreshed', 'info');
-  } catch (error) {
-    console.error(error);
-    if (showNotification && typeof showToast === 'function') showToast('Unable to refresh control plane', 'error');
-  } finally {
-    spinner?.classList.remove('spinning');
-    $('refreshDataBtn')?.removeAttribute('aria-busy');
-  }
-}
-window.refreshAllData = refreshAllData;
-
-function renderOverview() {
-  const o = state.overview || {};
-  const active = o.total_agents ?? state.agents.length;
-  const incidents = o.open_incidents ?? state.incidents.filter(i => ['open','active'].includes(String(i.status).toLowerCase())).length;
-  if ($('metricActiveAgents')) $('metricActiveAgents').textContent = Number(active).toLocaleString();
-  if ($('metricOpenIncidents')) $('metricOpenIncidents').textContent = Number(incidents).toLocaleString();
-  if ($('navAgentCount')) $('navAgentCount').textContent = state.agents.length;
-  if ($('navPolicyCount')) $('navPolicyCount').textContent = state.policies.length;
-  const pending = state.escalations.filter(e => String(e.status || 'pending').toLowerCase() === 'pending').length;
-  if ($('navEscalationCount')) $('navEscalationCount').textContent = pending;
-  if ($('navIncidentCount')) $('navIncidentCount').textContent = state.incidents.length;
-  const body = $('overviewDecisionsTbody');
-  if (!body) return;
-  const rows = state.actions.slice(0, 8);
-  body.innerHTML = rows.length ? rows.map(decisionRow).join('') : '<tr><td class="empty-state">No decisions yet.</td></tr>';
-}
-
-function decisionRow(a) {
-  const action = a.action_type || a.action || a.type || 'Action';
-  const decision = a.decision || a.outcome || a.status || '—';
-  const agent = a.agent_id || a.agent || 'Unknown agent';
-  const time = a.timestamp || a.created_at || a.createdAt;
-  return `<tr><td><strong>${escapeHtml(action)}</strong><div class="muted">${escapeHtml(agent)}</div></td><td><span class="decision decision-${String(decision).toLowerCase().replace(/[^a-z]/g,'')}">${escapeHtml(decision)}</span></td><td class="muted">${formatTime(time)}</td></tr>`;
-}
-
-function renderAgents() {
-  const el = $('agentsGrid'); if (!el) return;
-  el.innerHTML = state.agents.length ? state.agents.map(a => `<article class="resource-row"><div><strong>${escapeHtml(a.name || a.id || 'Unnamed agent')}</strong><div class="muted">${escapeHtml(a.description || a.id || '')}</div></div><span class="status-dot-label">${escapeHtml(a.status || 'active')}</span></article>`).join('') : '<div class="empty-state">No agents connected.</div>';
-}
-function renderPolicies() {
-  const el = $('policiesList'); if (!el) return;
-  el.innerHTML = state.policies.length ? state.policies.map(p => `<article class="resource-row"><div><strong>${escapeHtml(p.name || p.id || 'Policy')}</strong><div class="muted">${escapeHtml(p.description || p.action || 'Control rule')}</div></div><span>${escapeHtml(p.status || (p.enabled === false ? 'disabled' : 'active'))}</span></article>`).join('') : '<div class="empty-state">No policies configured.</div>';
-}
-function renderActions() { const el = $('actionsTableBody'); if (el) el.innerHTML = state.actions.length ? state.actions.map(decisionRow).join('') : '<tr><td class="empty-state">No activity yet.</td></tr>'; }
-function renderEscalations() { const el = $('escalationsStream'); if (el) el.innerHTML = state.escalations.length ? state.escalations.slice(0,20).map(e => `<article class="resource-row"><div><strong>${escapeHtml(e.action_type || e.action || 'Review')}</strong><div class="muted">${escapeHtml(e.agent_id || e.agent || '')}</div></div><button class="btn-ghost btn-sm" type="button">Review</button></article>`).join('') : '<div class="empty-state">No reviews waiting.</div>'; }
-function renderIncidents() { const el = $('incidentsList'); if (el) el.innerHTML = state.incidents.length ? state.incidents.map(i => `<article class="resource-row"><div><strong>${escapeHtml(i.title || i.name || i.id || 'Incident')}</strong><div class="muted">${escapeHtml(i.description || '')}</div></div><span>${escapeHtml(i.status || 'open')}</span></article>`).join('') : '<div class="empty-state">No open incidents.</div>'; }
-function renderAuditLedger() { const el = $('auditLedgerTableBody'); if (el) el.innerHTML = state.actions.length ? state.actions.map(decisionRow).join('') : '<tr><td class="empty-state">No audit events.</td></tr>'; }
-
-function formatTime(value) { if (!value) return '—'; const d = new Date(value); return Number.isNaN(d.getTime()) ? escapeHtml(String(value)) : d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }); }
-function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDashboard, { once: true }); else initDashboard();
+const state={agents:[],policies:[],reviews:[],incidents:[],audit:[]};
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+async function api(url,options={}){const r=await fetch(url,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||`Request failed (${r.status})`);return data}
+function show(view){location.hash=view;document.querySelectorAll('aside button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));render(view)}
+async function load(){try{[state.agents,state.policies,state.reviews,state.incidents,state.audit]=await Promise.all([api('/v1/agents'),api('/v1/policies'),api('/v1/escalations'),api('/v1/incidents'),api('/v1/audit?limit=20')]);document.getElementById('agentCount').textContent=state.agents.length;document.getElementById('policyCount').textContent=state.policies.length;document.getElementById('reviewCount').textContent=state.reviews.filter(x=>x.status==='pending').length;render(location.hash.slice(1)||'overview')}catch(e){document.getElementById('main').innerHTML=`<div class="head"><div><h1>Control plane unavailable</h1><p>${esc(e.message)}</p></div></div>`}}
+function head(title,sub,action=''){return `<div class="head"><div><h1>${title}</h1><p>${sub}</p></div>${action}</div>`}
+function render(v){const m=document.getElementById('main');if(v==='agents')return agents(m);if(v==='policies')return policies(m);if(v==='reviews')return reviews(m);if(v==='incidents')return incidents(m);if(v==='audit')return audit(m);if(v==='sandbox')return sandbox(m);overview(m)}
+function overview(m){const open=state.incidents.filter(x=>!['RESOLVED','MITIGATED'].includes(String(x.status).toUpperCase())).length;const pending=state.reviews.filter(x=>x.status==='pending').length;m.innerHTML=head('Overview','A quiet view of what needs attention.')+`<div class="metrics"><div class="metric"><span>Active agents</span><strong>${state.agents.filter(a=>a.status!=='disabled').length}</strong></div><div class="metric"><span>Needs review</span><strong>${pending}</strong></div></div><section class="panel"><div class="panel-head"><strong>Recent decisions</strong><p>Latest control-plane evidence.</p></div><table class="table"><tbody>${state.audit.slice(0,8).map(x=>`<tr><td><strong>${esc(x.action_type)}</strong><div class="muted">${esc(x.agent_id)}</div></td><td class="right ${x.decision==='blocked'?'danger':x.decision?.includes('pending')?'review':''}">${esc(x.decision)}</td></tr>`).join('')||'<tr><td class="empty">No decisions yet.</td></tr>'}</tbody></table></section>`}
+function agents(m){m.innerHTML=head('Agents','Production agents under Conforva control.',`<button class="primary" onclick="agentDialog.showModal()">Add agent</button>`)+`<div>${state.agents.map(a=>`<article class="item"><div><strong>${esc(a.name)}</strong><div class="muted">${esc(a.agent_id)} · ${esc(a.model)} · ${esc(a.tier)}</div></div><span class="status">${esc(a.status||'active')}</span></article>`).join('')||'<div class="empty">No agents registered.</div>'}</div>`}
+function policies(m){m.innerHTML=head('Policies','Deterministic boundaries for agent actions.')+`<div>${state.policies.map(p=>`<article class="item"><div><strong>${esc(p.name)}</strong><div class="muted">${esc(p.description)}</div></div><span class="status">${esc(p.status)}</span></article>`).join('')}</div>`}
+function reviews(m){m.innerHTML=head('Reviews','Human authorization queue.')+`<div>${state.reviews.filter(x=>x.status==='pending').map(x=>`<article class="item"><div><strong>${esc(x.action_type||'Action review')}</strong><div class="muted">${esc(x.agent_id)} · ${esc(x.eventId||'')}</div></div><span class="review">PENDING</span></article>`).join('')||'<div class="empty">No reviews waiting.</div>'}</div>`}
+function incidents(m){m.innerHTML=head('Incidents','Events requiring investigation or resolution.')+`<div>${state.incidents.map(x=>`<article class="item"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.agent_id)} · ${esc(x.summary)}</div></div><span class="${x.severity==='CRITICAL'?'danger':''}">${esc(x.status)}</span></article>`).join('')}</div>`}
+function audit(m){m.innerHTML=head('Audit','Decision evidence and integrity.')+`<section class="panel"><table class="table"><tbody>${state.audit.map(x=>`<tr><td>${esc(x.eventId||x.id)}<div class="muted">${esc(x.agent_id)} · ${esc(x.action_type)}</div></td><td class="right">${esc(x.decision)}</td></tr>`).join('')||'<tr><td class="empty">No audit events.</td></tr>'}</tbody></table></section>`}
+function sandbox(m){m.innerHTML=head('Sandbox','Evaluate an action before execution.')+`<section class="panel"><div class="panel-head"><strong>Evaluate action</strong><p>Use a real agent and inspect the resulting decision.</p></div><div style="padding:17px"><div class="two"><label>Agent<select id="sbAgent">${state.agents.map(a=>`<option value="${esc(a.agent_id)}">${esc(a.name)}</option>`).join('')}</select></label><label>Action type<input id="sbAction" value="refund"></label></div><label>Description<textarea id="sbDesc" placeholder="Describe the proposed action"></textarea></label><button class="primary" onclick="evaluateSandbox()">Evaluate</button><div id="sbResult"></div></div></section>`}
+async function evaluateSandbox(){const out=document.getElementById('sbResult');out.innerHTML='<p class="muted">Evaluating…</p>';try{const r=await api('/v1/actions/evaluate',{method:'POST',body:JSON.stringify({agent_id:document.getElementById('sbAgent').value,action_type:document.getElementById('sbAction').value,description:document.getElementById('sbDesc').value})});out.innerHTML=`<div class="notice" style="margin-top:14px"><strong>${esc(r.decision||r.outcome||'Evaluated')}</strong><div class="muted">Risk ${esc(r.risk_score??'—')}</div></div>`}catch(e){out.innerHTML=`<p class="error">${esc(e.message)}</p>`}}
+document.getElementById('agentForm').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;const err=document.getElementById('agentError');err.textContent='';try{const data=Object.fromEntries(new FormData(form));data.max_autonomous_amount=Number(data.max_autonomous_amount);data.required_human_approval_above=Number(data.required_human_approval_above);await api('/v1/agents',{method:'POST',body:JSON.stringify(data)});form.reset();agentDialog.close();await load();show('agents')}catch(x){err.textContent=x.message}});
+window.addEventListener('hashchange',()=>render(location.hash.slice(1)||'overview'));load();
