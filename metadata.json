@@ -3,11 +3,6 @@
   "description": "Control plane for autonomous AI agents: deterministic policy enforcement, risk evaluation, human oversight, audit evidence, and cryptographic integrity.",
   "requestFramePermissions": [],
   "majorCapabilities": [
-    "deterministic_policy_enforcement",
-    "risk_evaluation",
-    "human_oversight",
-    "audit_evidence",
-    "cryptographic_integrity",
-    "provider_neutral_model_routing"
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
 }

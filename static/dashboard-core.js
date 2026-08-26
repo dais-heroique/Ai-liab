@@ -31,19 +31,26 @@ const state = {
     lastProof: null
   }
 };
+window.state = state;
 
-// DOM Content Loaded
-document.addEventListener('DOMContentLoaded', async () => {
+// DOM Content Loaded & Safe Initialization
+function initDashboard() {
   setupNavigation();
   setupGlobalSearch();
   setupSidebarToggle();
-  await refreshAllData(false);
+  refreshAllData(false);
 
   // Periodic subtle background refresh every 15s
   setInterval(() => {
     refreshAllData(false);
   }, 15000);
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+  initDashboard();
+}
 
 /* --------------------------------------------------------------------------
    NAVIGATION & ROUTER
@@ -138,28 +145,36 @@ async function refreshAllData(showNotification = false) {
   try {
     const [overviewRes, agentsRes, policiesRes, actionsRes, escalationsRes, incidentsRes, keysRes, intRes, usageRes] =
       await Promise.all([
-        fetch('/v1/overview'),
-        fetch('/v1/agents'),
-        fetch('/v1/policies'),
-        fetch('/v1/audit?limit=100'),
-        fetch('/v1/escalations?status=all'),
-        fetch('/v1/incidents'),
-        fetch('/v1/api-keys'),
-        fetch('/v1/integrations'),
+        fetch('/v1/overview').catch(() => null),
+        fetch('/v1/agents').catch(() => null),
+        fetch('/v1/policies').catch(() => null),
+        fetch('/v1/audit?limit=100').catch(() => null),
+        fetch('/v1/escalations?status=all').catch(() => null),
+        fetch('/v1/incidents').catch(() => null),
+        fetch('/v1/api-keys').catch(() => null),
+        fetch('/v1/integrations').catch(() => null),
         fetch('/v1/usage').catch(() => null)
       ]);
 
-    state.overview = await overviewRes.json();
-    state.agents = await agentsRes.json();
-    state.policies = await policiesRes.json();
-    state.actions = await actionsRes.json();
-    state.escalations = await escalationsRes.json();
-    state.incidents = await incidentsRes.json();
-    state.apiKeys = await keysRes.json();
-    state.integrations = await intRes.json();
+    state.overview = (overviewRes && overviewRes.ok) ? await overviewRes.json() : (state.overview || {});
+    state.agents = (agentsRes && agentsRes.ok) ? await agentsRes.json() : (state.agents || []);
+    state.policies = (policiesRes && policiesRes.ok) ? await policiesRes.json() : (state.policies || []);
+    state.actions = (actionsRes && actionsRes.ok) ? await actionsRes.json() : (state.actions || []);
+    state.escalations = (escalationsRes && escalationsRes.ok) ? await escalationsRes.json() : (state.escalations || []);
+    state.incidents = (incidentsRes && incidentsRes.ok) ? await incidentsRes.json() : (state.incidents || []);
+    state.apiKeys = (keysRes && keysRes.ok) ? await keysRes.json() : (state.apiKeys || []);
+    state.integrations = (intRes && intRes.ok) ? await intRes.json() : (state.integrations || []);
     if (usageRes && usageRes.ok) {
       state.usage = await usageRes.json();
     }
+
+    if (!Array.isArray(state.agents)) state.agents = [];
+    if (!Array.isArray(state.policies)) state.policies = [];
+    if (!Array.isArray(state.actions)) state.actions = [];
+    if (!Array.isArray(state.escalations)) state.escalations = [];
+    if (!Array.isArray(state.incidents)) state.incidents = [];
+    if (!Array.isArray(state.apiKeys)) state.apiKeys = [];
+    if (!Array.isArray(state.integrations)) state.integrations = [];
 
     // Render all views
     renderOverview();
@@ -177,7 +192,7 @@ async function refreshAllData(showNotification = false) {
     populateWorkbenchPolicies();
 
     if (showNotification) {
-      showToast('Telemetry refreshed from gateway cluster', 'info');
+      showToast('Telemetry refreshed from control plane', 'info');
     }
   } catch (err) {
     console.error('Failed to sync gateway state:', err);
@@ -2239,3 +2254,21 @@ function onboardingDownloadPassport() {
   a.click();
   showToast('AI Passport downloaded successfully', 'success');
 }
+
+function toggleLandingView() {
+  window.location.href = '/landing.html';
+}
+
+window.navigateTo = navigateTo;
+window.refreshAllData = refreshAllData;
+window.toggleLandingView = toggleLandingView;
+window.openCreateAgentModal = openCreateAgentModal;
+window.closeCreateAgentModal = closeCreateAgentModal;
+window.openCreatePolicyModal = openCreatePolicyModal;
+window.closeCreatePolicyModal = closeCreatePolicyModal;
+window.openCreateApiKeyModal = openCreateApiKeyModal;
+window.closeCreateApiKeyModal = closeCreateApiKeyModal;
+window.openOnboardingWizard = openOnboardingWizard;
+window.closeOnboardingWizard = closeOnboardingWizard;
+window.showToast = showToast;
+

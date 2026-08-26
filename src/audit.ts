@@ -768,4 +768,74 @@ export function createPolicy(rule: Omit<PolicyRule, 'id' | 'lastUpdated'>, orgId
   return newPolicy;
 }
 
+export function seedDefaultTelemetry() {
+  if (auditLogs.length > 0) return;
+
+  const sampleActions: Array<{
+    agentId: string;
+    action: ActionRequest;
+    risk: RiskResult;
+    decision: 'approved' | 'blocked' | 'pending_approval';
+    reason: string;
+    policy: string;
+    model: string | null;
+  }> = [
+    {
+      agentId: 'acme-customer-agent',
+      action: { action_type: 'refund', amount: 45, description: 'VIP customer delivery delay compensation credit', target: 'Stripe Payments / SEPA Core' },
+      risk: { risk_score: 12.4, needs_model: false, breakdown: { finance: 10, legal: 5, privacy: 5, cyber: 5, autonomy: 10, physical: 0 }, factors: ['Low-amount refund'] },
+      decision: 'approved',
+      reason: 'Refund amount €45 is below the €500 autonomous threshold.',
+      policy: 'POL-FIN-01 (Customer Refund Policy)',
+      model: 'claude-3-5-sonnet'
+    },
+    {
+      agentId: 'acme-customer-agent',
+      action: { action_type: 'refund', amount: 14500, description: 'Damaged freight shipment reimbursement', target: 'Stripe Payments / SEPA Core' },
+      risk: { risk_score: 64.2, needs_model: false, breakdown: { finance: 85, legal: 40, privacy: 10, cyber: 10, autonomy: 40, physical: 0 }, factors: ['High-value financial transaction', 'Threshold ceiling breach'] },
+      decision: 'pending_approval',
+      reason: 'Refund amount €14,500 exceeds autonomous approval limit of €500.',
+      policy: 'POL-FIN-01 (Customer Refund Policy)',
+      model: null
+    },
+    {
+      agentId: 'acme-cnc-controller',
+      action: { action_type: 'machine_control', description: 'Emergency spindle speed change to 8000 RPM', target: 'Edge PLC Bus (Modbus/TCP)', parameters: { rpm: 8000 } },
+      risk: { risk_score: 96.0, needs_model: false, breakdown: { finance: 30, legal: 50, privacy: 0, cyber: 60, autonomy: 80, physical: 98 }, factors: ['Kinetic safety violation', 'Spindle overspeed > 4000 RPM'] },
+      decision: 'blocked',
+      reason: 'Blocked by POL-PHYS-03: Machine spindle speed 8000 RPM exceeds maximum safety rating of 4000 RPM.',
+      policy: 'POL-PHYS-03 (CNC Hard Safety Limit)',
+      model: null
+    },
+    {
+      agentId: 'acme-fintech-disbursement',
+      action: { action_type: 'wire_transfer', amount: 450, description: 'Vendor invoice settlement #INV-9921', target: 'Stripe Payments / SEPA Core' },
+      risk: { risk_score: 18.0, needs_model: false, breakdown: { finance: 20, legal: 15, privacy: 10, cyber: 10, autonomy: 15, physical: 0 }, factors: ['Standard verified payee'] },
+      decision: 'approved',
+      reason: 'Wire transfer €450 is within verified autonomous disbursement parameters.',
+      policy: 'POL-TREASURY-02 (Corporate Wire Transfer)',
+      model: 'gpt-4o'
+    },
+    {
+      agentId: 'acme-cnc-controller',
+      action: { action_type: 'delete_data', description: 'Purge raw machine sensor logs', target: 'PostgreSQL Core Audit Ledger' },
+      risk: { risk_score: 88.5, needs_model: false, breakdown: { finance: 10, legal: 70, privacy: 60, cyber: 95, autonomy: 70, physical: 0 }, factors: ['Destructive data mutation', 'Audit log retention violation'] },
+      decision: 'blocked',
+      reason: 'Blocked by POL-CYBER-04: Destructive action type delete_data is blocked by immutable retention rules.',
+      policy: 'POL-CYBER-04 (Data Retention Guard)',
+      model: null
+    }
+  ];
+
+  for (const s of sampleActions) {
+    const { logId } = logDecision(s.agentId, s.action, s.risk, s.decision, s.reason, s.model, null, s.policy);
+    if (s.decision === 'pending_approval') {
+      createEscalation(logId, s.agentId);
+    }
+  }
+}
+
+seedDefaultTelemetry();
+
+
 

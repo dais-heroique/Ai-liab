@@ -218,8 +218,7 @@
     const rail = document.getElementById('cfAttention');
     if (!rail) return;
 
-    const overview = window.state || state;
-    const data = overview?.overview;
+    const data = (window.state && window.state.overview) ? window.state.overview : {};
     const pending = Number(data?.pending_escalations || 0);
     const incidents = Number(data?.open_incidents || 0);
 
