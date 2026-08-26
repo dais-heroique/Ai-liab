@@ -1,0 +1,22 @@
+/* Arexid B2B finishing layer */
+:root{--ink:#0a0b0d;--muted:#68707a;--line:#e8eaed;--accent:#1f5eff;--green:#15966a;--max:1160px}
+body{font-feature-settings:'cv11' 1,'ss01' 1;letter-spacing:-.006em}
+.nav{max-width:1240px;height:68px;border-bottom:0;padding:0 28px}
+.nav:after{content:'';position:absolute;left:28px;right:28px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#e7e9ec 12%,#e7e9ec 88%,transparent)}
+.brand{font-weight:700;letter-spacing:.14em}.brand-mark{width:23px;height:23px}
+.nav nav{gap:25px}.nav nav a,.login{font-size:10px;font-weight:500;color:#737a84}
+.button{border-radius:6px;padding:12px 16px;font-size:10px;letter-spacing:.005em;box-shadow:0 1px 0 #0002}.button.small{padding:9px 13px}.button:hover{transform:translateY(-1px);box-shadow:0 8px 22px #10131818}
+.hero{padding-top:116px;min-height:700px}.hero h1{font-weight:600;max-width:850px}.lede{font-size:15px;max-width:600px;color:#5e6670}.proof-row{margin-top:60px}
+.hero-visual{opacity:.82}.hero-console{box-shadow:0 24px 60px #10151d20}
+.marquee{background:#fbfbfc}.marquee>div{padding:16px}
+.decision-stage{background:#f8f9fa;padding-top:105px;padding-bottom:105px}.stage-head h2{max-width:690px}.stage-head p{color:#69717b}
+.node{border-radius:7px;min-height:128px}.node strong{letter-spacing:-.02em}.node.gateway.active{border-color:#b9c9ee;background:#fcfdff}.node.decision{box-shadow:0 10px 30px #141a2410}
+.product,.developers,.faq{padding-top:112px;padding-bottom:112px}.section-intro h2{max-width:600px}.capabilities{margin-top:56px}.capabilities article{min-height:235px}.capabilities h3{font-size:17px}.capabilities p{max-width:390px;color:#707781}
+.verification{padding-top:105px;padding-bottom:105px;background:#f8f9fa}.verification-grid{margin-top:58px}.verify-card{border-radius:7px;box-shadow:0 10px 30px #13192308}.verify-card.result{box-shadow:0 0 0 3px #15966a08}.tier-row span{padding-left:0}.tier-row span+span{padding-left:18px;border-left:1px solid #e1e4e8}
+.evidence{padding-top:110px;padding-bottom:110px;background:#f8f9fa}.proof-panel{border-radius:7px}.developers .code{border-radius:7px;box-shadow:0 20px 55px #11151d1b}.faq{border-top:0}.faq-list{border-top:1px solid var(--line)}
+.cta{padding-top:115px;padding-bottom:120px}.cta h2{font-size:clamp(38px,5vw,60px)}
+footer{max-width:1240px;padding-left:28px;padding-right:28px}footer:before{content:'';position:absolute}footer{position:relative}
+.mobile-nav{position:absolute;top:62px;left:12px;right:12px;background:#fff;border:1px solid #e1e4e8;border-radius:8px;box-shadow:0 18px 50px #11151d18;padding:8px;display:grid;gap:2px}.mobile-nav a{padding:12px 13px;text-decoration:none;color:#252a31;font-size:12px;border-radius:5px}.mobile-nav a:hover{background:#f4f5f7}.nav.open{background:#fff}
+:focus-visible{outline:2px solid #1f5eff;outline-offset:3px}.button:focus-visible{outline-color:#fff}
+@media(max-width:800px){.nav{padding:0 20px}.nav:after{left:20px;right:20px}.hero{padding-top:82px;min-height:760px}.hero h1{font-size:clamp(48px,15vw,72px);letter-spacing:-.065em}.lede{font-size:14px;line-height:1.7}.hero-actions{gap:20px}.hero-visual{top:350px;opacity:.32}.decision-stage,.verification{padding-top:78px;padding-bottom:78px}.stage-head h2,.section-intro h2,.evidence h2,.developers h2,.faq h2{font-size:34px}.capabilities article{min-height:0}.verification-grid{margin-top:45px}.tier-row{grid-template-columns:1fr 1fr}.tier-row span+span{border-left:0;padding-left:0}.evidence,.developers{padding-top:80px;padding-bottom:80px}}
+@media(min-width:801px){.nav .menu{display:none}}
