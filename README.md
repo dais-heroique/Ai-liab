@@ -1,94 +1,100 @@
-# AI Liability Gateway — MVP
+# Conforva
 
-Prototype technique de l'infrastructure "AI Liability Infrastructure" :
-au lieu de brancher une entreprise directement sur un LLM, on fait transiter
-chaque action proposée par un agent IA à travers un gateway qui la note, la
-compare au contrat de l'agent, journalise la décision, et route vers un
-humain quand c'est nécessaire.
+Conforva is a control plane for autonomous AI agents.
 
+It sits between an agent and the systems it can affect, evaluating proposed actions before downstream execution and preserving the evidence needed to understand what happened.
+
+## Product model
+
+```text
+AI agent
+   ↓
+Conforva
+   ├─ Risk evaluation
+   ├─ Deterministic policy enforcement
+   ├─ Verification / model routing
+   ├─ Decision: ALLOW / HUMAN REVIEW / BLOCK
+   └─ Cryptographic audit evidence
+   ↓
+Downstream execution
 ```
-Entreprise → Gateway → Risk Engine → Policy Engine → Model Router → LLM
-                              ↓              ↓
-                          Audit Log   Escalade humaine
-```
 
-## Ce que fait ce MVP
+The product is deliberately positioned around **control, observability and evidence**. It does not make an absolute legal-liability guarantee.
 
-- **Risk Engine** (`app/risk_engine.py`) — note chaque action sur 6 catégories
-  (finance, légal, privacy, cyber, autonomie, impact physique) à partir d'un
-  catalogue de types d'action, avec un score qui monte avec le montant pour
-  les actions financières.
-- **Policy Engine** (`app/policy_engine.py`) — couche déterministe : types
-  d'action interdits et **contraintes physiques câblées en dur** (ex. RPM
-  max d'une machine) bloquent toujours, indépendamment du score de risque.
-  Au-delà d'un seuil de risque ou de montant → escalade humaine plutôt que
-  blocage.
-- **Model Router** (`app/model_router.py`) — choisit et appelle le modèle
-  défini dans le contrat de l'agent. Claude est branché en vrai (avec ta clé
-  API) ; les autres fournisseurs sont mockés proprement pour montrer la
-  logique de routing/repli sans dépendre de leurs clés.
-- **Audit** (`app/audit.py`) — SQLite local (`gateway.db`), une ligne par
-  décision, plus une file d'escalade avec résolution par un opérateur.
-- **AI Passport** (`GET /v1/agents/{id}/passport`) — le contrat lisible d'un
-  agent : modèle, seuils, assurance, opérateur assigné, stats vécues.
-- **Dashboard** (`/`) — console pour soumettre une action de test, traiter
-  la file d'escalade, et consulter le journal d'audit.
+## Current capabilities
 
-Trois agents de démo dans `config/agents.json`, calqués sur les trois
-niveaux du document stratégique :
-- `acme-faq-bot` (AI SAFE, Niveau 0 — informationnel)
-- `acme-customer-agent` (AI GUARANTEE, Niveau 1 — actions logicielles / SAV)
-- `acme-cnc-controller` (AI CRITICAL, Niveau 2 — contrôle machine, avec
-  limite RPM câblée en dur pour démontrer la couche de sécurité
-  déterministe)
+- **Agent control profiles** — production-oriented identity, model/fallback configuration, autonomous amount limits, blocked actions, hard constraints and human operator assignment.
+- **Risk engine** — transparent category-based evaluation across finance, legal, privacy, cyber, autonomy and physical impact.
+- **Deterministic policy engine** — hard policy boundaries are evaluated independently of model output; policy decisions can allow, require human review or block.
+- **Provider-neutral model routing** — model/provider selection and verification metadata are separated from policy enforcement.
+- **Human oversight** — actions above configured thresholds can be held for operator review rather than executed automatically.
+- **AI Passport** — an inspectable agent contract with configuration, recent decisions, statistics and a cryptographic seal.
+- **Audit integrity** — decision records include chained proof material and an integrity verification endpoint.
+- **Idempotent evaluation** — action requests can carry an idempotency key so retries do not create duplicate decisions.
+- **Incidents and forensics** — the product model includes incident timelines connecting detection, policy enforcement, human intervention and resolution.
+- **Developer surface** — a small public API contract is defined in `src/api_contract.ts` for evaluation, execution, agents, passports, verification, audit integrity and health.
+- **Enterprise console** — the dashboard provides fleet overview, agents, policies, activity, risk, reviews, incidents, audit, sandbox, passports and platform/developer surfaces.
 
-## Lancer en local
+## API surface
+
+The current server exposes:
+
+- `POST /v1/actions/evaluate`
+- `POST /v1/actions/execute`
+- `POST /v1/agents/:agent_id/action`
+- `GET /v1/agents`
+- `POST /v1/agents`
+- `GET /v1/agents/:agent_id/passport`
+- `POST /v1/agents/:agent_id/passport/verify`
+- `GET /v1/audit/integrity`
+- `GET /health`
+
+The canonical public contract is kept in `src/api_contract.ts`.
+
+## Local development
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# Optionnel : pour que le Model Router appelle vraiment Claude
-export ANTHROPIC_API_KEY="sk-ant-..."
-
-uvicorn app.main:app --reload --port 8000
+npm install
+npm run dev
 ```
 
-Ouvre `http://127.0.0.1:8000` pour le dashboard.
+The server listens on port `3000`.
 
-Pour peupler rapidement le journal et la file d'escalade avec des exemples :
+For a TypeScript validation build:
 
 ```bash
-chmod +x demo_seed.sh
-./demo_seed.sh
+npm run build
 ```
 
-## Limites connues de ce MVP (à traiter avant tout vrai client)
+## Demo agents
 
-- Un seul process, une seule base SQLite locale — pas de multi-tenant, pas
-  d'auth sur les endpoints (`/v1/agents/{id}/action` accepte n'importe qui).
-- Le Risk Engine est un barème de règles, transparent mais grossier — à
-  affiner avec de vraies données d'incidents avant de vendre le "Risk
-  Score" comme argument commercial.
-- Le Model Router ne gère réellement que Claude ; OpenAI/Gemini/Mistral/
-  local sont mockés — brancher un client réel par fournisseur est direct
-  (`call_model` dans `app/model_router.py`).
-- Pas de volet assurance/contrat réel : `insurance_coverage_eur` est un
-  champ statique de config, pas un calcul actuariel. C'est précisément le
-  point à cadrer avec des juristes/assureurs avant d'en faire un vrai
-  argument de vente (cf. section 6 du document stratégique).
-- Pas de webhook de retour vers l'entreprise cliente quand une escalade est
-  résolue — à ajouter dès qu'il y a un vrai système en aval à notifier.
+The current configuration includes five representative profiles:
 
-## Prochaines étapes suggérées
+- Customer support / FAQ
+- Enterprise customer operations
+- Treasury and disbursement
+- CNC industrial control
+- Cloud infrastructure / SRE
 
-1. Auth par entreprise (clé API par tenant, isolation des données).
-2. Historiser le Risk Score dans le temps par agent (courbe, pas juste une
-   moyenne) pour nourrir la boucle "moins d'incidents → moins d'assurance →
-   plus de marge" décrite dans la stratégie.
-3. Endpoint de génération du contrat "AI Passport" en PDF signable.
-4. Vrai routing multi-fournisseur (au moins OpenAI en plus de Claude) pour
-   démontrer le repli automatique en cas de panne fournisseur.
-5. Rejouer les 3 agents de démo comme base d'un premier pitch client sur le
-   segment "agents SAV" (Niveau 1) — c'est le point d'entrée le moins
-   risqué recommandé dans le document stratégique (section 18).
+Their configuration is stored in `config/agents.json`.
+
+## Architecture
+
+- `server.ts` — HTTP entrypoint and control-plane request flow.
+- `src/risk_engine.ts` — risk scoring.
+- `src/policy_engine.ts` — deterministic enforcement.
+- `src/model_router.ts` / `src/ai_provider_router.ts` — provider/model selection and verification planning.
+- `src/audit.ts` — audit records, escalations, policies, incidents, API keys and cryptographic evidence.
+- `src/api_contract.ts` — public API contract and decision normalization.
+- `src/types.ts` — shared domain types.
+- `static/dashboard.html` — product console shell.
+- `static/dashboard-core.js` — live console behavior and backend integration.
+- `static/enterprise-ux.js` — command palette, accessibility and interaction polish.
+- `static/conforva-brand.js` — product identity layer.
+- `static/conforva-premium.js` — premium control-plane UX layer.
+
+## Important production boundaries
+
+This repository is still a product-development codebase, not a finished multi-tenant production deployment. In particular, persistence, authentication, authorization, tenant isolation, secret handling, durable event delivery and deployment hardening should be treated as production work before handling real customer workloads.
+
+The risk score is an interpretable control signal, not an actuarial or legal determination. Insurance-related configuration should not be presented as coverage supplied by Conforva without an actual contractual arrangement.
