@@ -2,14 +2,13 @@
   "version": 2,
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": "static",
   "functions": {
     "api/index.ts": {
-      "runtime": "@vercel/node"
+      "runtime": "@vercel/node",
+      "includeFiles": ["static/**", "config/**"]
     }
   },
   "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
     { "src": "/(.*)", "dest": "/api/index.ts" }
   ]
 }
