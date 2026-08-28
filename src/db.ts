@@ -1,38 +1,9 @@
 import { createClient, type Client } from '@libsql/client';
 import type { AgentConfig } from './types.js';
-
-const url = process.env.TURSO_DATABASE_URL;
-const authToken = process.env.TURSO_AUTH_TOKEN;
-
-export const dbEnabled = Boolean(url && authToken);
-const client: Client | null = dbEnabled ? createClient({ url: url!, authToken: authToken! }) : null;
-
-export async function initDb() {
-  if (!client) return;
-  await client.batch([
-    `CREATE TABLE IF NOT EXISTS agents (agent_id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, data TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
-    `CREATE TABLE IF NOT EXISTS decisions (id INTEGER PRIMARY KEY AUTOINCREMENT, organization_id TEXT NOT NULL, agent_id TEXT NOT NULL, action_type TEXT NOT NULL, decision TEXT NOT NULL, risk_score REAL, data TEXT NOT NULL, created_at TEXT NOT NULL)`,
-  ], 'write');
-}
-
-export async function loadAgents(organizationId: string): Promise<Record<string, AgentConfig>> {
-  if (!client) return {};
-  const result = await client.execute({ sql: 'SELECT agent_id, data FROM agents WHERE organization_id = ?', args: [organizationId] });
-  return Object.fromEntries(result.rows.map(row => [String(row.agent_id), JSON.parse(String(row.data)) as AgentConfig]));
-}
-
-export async function saveAgent(agentId: string, agent: AgentConfig) {
-  if (!client) return;
-  await client.execute({ sql: `INSERT INTO agents (agent_id, organization_id, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(agent_id) DO UPDATE SET data=excluded.data, updated_at=excluded.updated_at`, args: [agentId, agent.organization_id || 'org_acme_global', JSON.stringify(agent), agent.created_at || new Date().toISOString(), agent.updated_at || new Date().toISOString()] });
-}
-
-export async function saveDecision(organizationId: string, agentId: string, actionType: string, decision: string, riskScore: number, data: unknown) {
-  if (!client) return;
-  await client.execute({ sql: 'INSERT INTO decisions (organization_id, agent_id, action_type, decision, risk_score, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', args: [organizationId, agentId, actionType, decision, riskScore, JSON.stringify(data), new Date().toISOString()] });
-}
-
-export async function getDecisionCount(organizationId: string) {
-  if (!client) return 0;
-  const result = await client.execute({ sql: 'SELECT COUNT(*) AS count FROM decisions WHERE organization_id = ?', args: [organizationId] });
-  return Number(result.rows[0]?.count || 0);
-}
+const url=process.env.TURSO_DATABASE_URL,authToken=process.env.TURSO_AUTH_TOKEN;
+export const dbEnabled=Boolean(url&&authToken); const client:Client|null=dbEnabled?createClient({url:url!,authToken:authToken!}):null;
+export async function initDb(){if(!client)return;await client.batch([`CREATE TABLE IF NOT EXISTS organizations (id TEXT PRIMARY KEY,name TEXT NOT NULL,slug TEXT UNIQUE,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`,`CREATE TABLE IF NOT EXISTS agents (agent_id TEXT PRIMARY KEY,organization_id TEXT NOT NULL,data TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'active',fallback_model TEXT,purpose TEXT,max_autonomous_amount REAL DEFAULT 500,required_human_approval_above REAL,hard_constraints TEXT NOT NULL DEFAULT '{}',blocked_action_types TEXT NOT NULL DEFAULT '[]',capabilities TEXT NOT NULL DEFAULT '[]',permissions TEXT NOT NULL DEFAULT '[]',risk_profile TEXT NOT NULL DEFAULT '{}',integrations TEXT NOT NULL DEFAULT '[]',passport TEXT)`,`CREATE TABLE IF NOT EXISTS decisions (id INTEGER PRIMARY KEY AUTOINCREMENT,organization_id TEXT NOT NULL,agent_id TEXT NOT NULL,action_type TEXT NOT NULL,decision TEXT NOT NULL,risk_score REAL,data TEXT NOT NULL,created_at TEXT NOT NULL)`,`CREATE INDEX IF NOT EXISTS idx_agents_org ON agents(organization_id)`,`CREATE INDEX IF NOT EXISTS idx_decisions_org ON decisions(organization_id)`],'write')}
+export async function loadAgents(organizationId:string):Promise<Record<string,AgentConfig>>{if(!client)return{};const r=await client.execute({sql:'SELECT agent_id,data FROM agents WHERE organization_id=?',args:[organizationId]});return Object.fromEntries(r.rows.map(x=>[String(x.agent_id),JSON.parse(String(x.data)) as AgentConfig]))}
+export async function saveAgent(id:string,a:AgentConfig){if(!client)return;const now=new Date().toISOString();await client.execute({sql:`INSERT INTO agents(agent_id,organization_id,data,created_at,updated_at,status,fallback_model,purpose,max_autonomous_amount,required_human_approval_above,hard_constraints,blocked_action_types,capabilities,permissions,risk_profile,integrations,passport) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(agent_id) DO UPDATE SET organization_id=excluded.organization_id,data=excluded.data,updated_at=excluded.updated_at,status=excluded.status,fallback_model=excluded.fallback_model,purpose=excluded.purpose,max_autonomous_amount=excluded.max_autonomous_amount,required_human_approval_above=excluded.required_human_approval_above,hard_constraints=excluded.hard_constraints,blocked_action_types=excluded.blocked_action_types,capabilities=excluded.capabilities,permissions=excluded.permissions,risk_profile=excluded.risk_profile,integrations=excluded.integrations,passport=excluded.passport`,args:[id,a.organization_id||'org_acme_global',JSON.stringify(a),a.created_at||now,a.updated_at||now,a.status||'active',a.fallback_model||null,a.purpose||null,a.max_autonomous_amount??500,a.required_human_approval_above??null,JSON.stringify(a.hard_constraints||{}),JSON.stringify((a as any).blocked_action_types||[]),JSON.stringify((a as any).capabilities||[]),JSON.stringify(a.permissions||[]),JSON.stringify((a as any).risk_profile||{}),JSON.stringify((a as any).integrations||[]),(a as any).passport?JSON.stringify((a as any).passport):null]})}
+export async function saveDecision(o:string,id:string,type:string,decision:string,risk:number,data:unknown){if(!client)return;await client.execute({sql:'INSERT INTO decisions(organization_id,agent_id,action_type,decision,risk_score,data,created_at) VALUES(?,?,?,?,?,?,?)',args:[o,id,type,decision,risk,JSON.stringify(data),new Date().toISOString()]})}
+export async function getDecisionCount(o:string){if(!client)return 0;const r=await client.execute({sql:'SELECT COUNT(*) AS count FROM decisions WHERE organization_id=?',args:[o]});return Number(r.rows[0]?.count||0)}
