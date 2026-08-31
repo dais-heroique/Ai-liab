@@ -1,6 +1,6 @@
 {
-  "name": "conforva-control-plane",
-  "version": "0.2.1",
+  "name": "conforva",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {"dev":"tsx server.ts","build":"tsc --noEmit","lint":"tsc --noEmit","start":"tsx server.ts"},
