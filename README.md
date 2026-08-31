@@ -10,46 +10,68 @@ It sits between an agent and the systems it can affect, evaluating proposed acti
 AI agent
    ↓
 Conforva
-   ├─ Risk evaluation
-   ├─ Deterministic policy enforcement
-   ├─ Verification / model routing
-   ├─ Decision: ALLOW / HUMAN REVIEW / BLOCK
-   └─ Cryptographic audit evidence
+   ├─ MiniMax M3 — agent reasoning
+   ├─ Laguna S 2.1 — security evaluation
+   ├─ Deterministic risk + policy enforcement
+   ├─ Decision: ALLOW / BLOCK
+   └─ Persisted audit evidence
    ↓
-Downstream execution
+Execution eligibility
 ```
 
-The product is deliberately positioned around **control, observability and evidence**. It does not make an absolute legal-liability guarantee.
+The security model is advisory analysis. Deterministic controls remain authoritative for hard boundaries. Conforva does not make an absolute legal-liability guarantee.
 
 ## Current capabilities
 
-- **Agent control profiles** — production-oriented identity, model/fallback configuration, autonomous amount limits, blocked actions, hard constraints and human operator assignment.
-- **Risk engine** — transparent category-based evaluation across finance, legal, privacy, cyber, autonomy and physical impact.
-- **Deterministic policy engine** — hard policy boundaries are evaluated independently of model output; policy decisions can allow, require human review or block.
-- **Provider-neutral model routing** — model/provider selection and verification metadata are separated from policy enforcement.
-- **Human oversight** — actions above configured thresholds can be held for operator review rather than executed automatically.
-- **AI Passport** — an inspectable agent contract with configuration, recent decisions, statistics and a cryptographic seal.
-- **Audit integrity** — decision records include chained proof material and an integrity verification endpoint.
-- **Idempotent evaluation** — action requests can carry an idempotency key so retries do not create duplicate decisions.
-- **Incidents and forensics** — the product model includes incident timelines connecting detection, policy enforcement, human intervention and resolution.
-- **Developer surface** — a small public API contract is defined in `src/api_contract.ts` for evaluation, execution, agents, passports, verification, audit integrity and health.
-- **Enterprise console** — the dashboard provides fleet overview, agents, policies, activity, risk, reviews, incidents, audit, sandbox, passports and platform/developer surfaces.
+- **Tenant accounts** — email/password accounts create an organization and establish an organization-scoped session.
+- **Agent control profiles** — production-oriented identity, model configuration, autonomous amount limits, blocked actions, hard constraints and permissions.
+- **Risk engine** — transparent category-based evaluation across operational risk dimensions.
+- **Deterministic policy engine** — hard policy boundaries are evaluated independently of model output. Legacy human-review policy actions are fail-closed as blocks; there is no human-review queue in the current product.
+- **AI security layer** — `poolside/laguna-s-2.1-free` evaluates proposed actions for security threats before an otherwise eligible action is approved.
+- **AI agent layer** — `minimax/minimax-m3-free` is used for agent execution through the Vercel AI Gateway.
+- **Audit persistence** — evaluations are stored in the organization-scoped `decisions` table in Turso.
+- **Live control-plane views** — overview, agents, policies, incidents and audit are read from the tenant's database records.
+- **Public idea validation** — `/v1/idea-vote` remains intentionally unauthenticated and stores vote results in Turso.
 
 ## API surface
 
-The current server exposes:
+Public:
 
-- `POST /v1/actions/evaluate`
-- `POST /v1/actions/execute`
-- `POST /v1/agents/:agent_id/action`
+- `GET /health`
+- `GET /v1/auth/me`
+- `POST /v1/auth/signup`
+- `POST /v1/auth/login`
+- `POST /v1/auth/logout`
+- `GET /v1/idea-vote`
+- `POST /v1/idea-vote`
+
+Authenticated control plane:
+
+- `GET /v1/overview`
 - `GET /v1/agents`
 - `POST /v1/agents`
-- `GET /v1/agents/:agent_id/passport`
-- `POST /v1/agents/:agent_id/passport/verify`
-- `GET /v1/audit/integrity`
-- `GET /health`
+- `PATCH /v1/agents/:agent_id`
+- `POST /v1/actions/evaluate`
+- `POST /v1/agents/:agent_id/run`
+- `POST /v1/ai/analyze`
+- `GET /v1/ai/models`
+- `GET /v1/policies`
+- `GET /v1/audit`
+- `GET /v1/incidents`
+- `GET /v1/escalations`
 
-The canonical public contract is kept in `src/api_contract.ts`.
+The dashboard and API use the authenticated session's `organization_id` for tenant isolation. Client-provided organization IDs are never used as authorization input.
+
+## Database
+
+Turso/libSQL is the persistence layer. The application reads credentials only from:
+
+- `TURSO_DATABASE_URL`
+- `TURSO_AUTH_TOKEN`
+
+Secrets are not stored in the repository.
+
+The current control plane uses the existing `organizations`, `agents`, `decisions`, `policies`, `incidents` and `idea_votes` records without replacing existing data. Authentication adds `users` and `sessions` when they are not already present.
 
 ## Local development
 
@@ -60,41 +82,27 @@ npm run dev
 
 The server listens on port `3000`.
 
-For a TypeScript validation build:
+For TypeScript validation:
 
 ```bash
 npm run build
 ```
 
-## Demo agents
-
-The current configuration includes five representative profiles:
-
-- Customer support / FAQ
-- Enterprise customer operations
-- Treasury and disbursement
-- CNC industrial control
-- Cloud infrastructure / SRE
-
-Their configuration is stored in `config/agents.json`.
-
 ## Architecture
 
-- `server.ts` — HTTP entrypoint and control-plane request flow.
-- `src/risk_engine.ts` — risk scoring.
+- `server.ts` — HTTP entrypoint, authentication boundary and control-plane request flow.
+- `src/risk_engine.ts` — deterministic risk scoring.
 - `src/policy_engine.ts` — deterministic enforcement.
-- `src/model_router.ts` / `src/ai_provider_router.ts` — provider/model selection and verification planning.
-- `src/audit.ts` — audit records, escalations, policies, incidents, API keys and cryptographic evidence.
-- `src/api_contract.ts` — public API contract and decision normalization.
-- `src/types.ts` — shared domain types.
+- `src/ai_gateway.ts` — Vercel AI Gateway model calls.
+- `src/ai_provider_router.ts` / `src/model_router.ts` — model/provider routing metadata.
+- `src/db.ts` — Turso persistence and tenant-scoped policy loading.
+- `src/control_plane_db.ts` — live overview, policy, incident and audit queries.
+- `src/auth.ts` — account and session persistence.
 - `static/dashboard.html` — product console shell.
 - `static/dashboard-core.js` — live console behavior and backend integration.
-- `static/enterprise-ux.js` — command palette, accessibility and interaction polish.
-- `static/conforva-brand.js` — product identity layer.
-- `static/conforva-premium.js` — premium control-plane UX layer.
 
-## Important production boundaries
+## Production boundaries
 
-This repository is still a product-development codebase, not a finished multi-tenant production deployment. In particular, persistence, authentication, authorization, tenant isolation, secret handling, durable event delivery and deployment hardening should be treated as production work before handling real customer workloads.
+This repository is a product-development codebase and still requires deployment hardening before real customer workloads. Authentication, authorization, tenant isolation and secret handling are implemented at the application layer, while durable event delivery, infrastructure hardening, rate limiting, operational monitoring and comprehensive integration testing remain production concerns.
 
-The risk score is an interpretable control signal, not an actuarial or legal determination. Insurance-related configuration should not be presented as coverage supplied by Conforva without an actual contractual arrangement.
+Risk scores are interpretable control signals, not actuarial or legal determinations. Insurance-related configuration must not be presented as coverage supplied by Conforva without an actual contractual arrangement.
