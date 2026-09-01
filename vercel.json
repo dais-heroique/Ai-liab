@@ -4,6 +4,16 @@
   "installCommand": "npm install",
   "routes": [
     { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/(.*)", "dest": "/api/index.ts" }
+    { "src": "/", "dest": "/static/landing.html" },
+    { "src": "/landing", "dest": "/static/landing.html" },
+    { "src": "/login", "dest": "/static/auth.html" },
+    { "src": "/dashboard", "dest": "/static/dashboard.html" },
+    { "src": "/pricing", "dest": "/static/pricing.html" },
+    { "src": "/security", "dest": "/static/security.html" },
+    { "src": "/docs", "dest": "/static/docs.html" },
+    { "src": "/api", "dest": "/static/api.html" },
+    { "src": "/v1/(.*)", "dest": "/api/index.ts" },
+    { "src": "/api/v1/(.*)", "dest": "/api/index.ts" },
+    { "src": "/health", "dest": "/api/index.ts" }
   ]
 }
