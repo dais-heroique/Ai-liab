@@ -10,6 +10,7 @@
     { "src": "/dashboard", "dest": "/static/dashboard.html" },
     { "src": "/pricing", "dest": "/static/pricing.html" },
     { "src": "/security", "dest": "/static/security.html" },
+    { "src": "/compliance", "dest": "/static/compliance.html" },
     { "src": "/docs", "dest": "/static/docs.html" },
     { "src": "/api", "dest": "/static/api.html" },
     { "src": "/v1/(.*)", "dest": "/api/index.ts" },
