@@ -16,7 +16,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Install dependencies
         run: npm install
       - name: TypeScript build
@@ -24,6 +23,8 @@ jobs:
       - name: Check browser scripts
         run: |
           node --check static/dashboard-core.js
+          node --check static/dashboard.js
+          node --check static/decisions.js
           node --check static/enterprise-ux.js
           node --check static/conforva-brand.js
           node --check static/conforva-premium.js
