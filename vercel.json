@@ -2,17 +2,34 @@
   "version": 2,
   "buildCommand": "npm run build",
   "installCommand": "npm install",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'" }
+      ]
+    }
+  ],
+  "redirects": [
+    { "source": "/landing", "destination": "/", "permanent": true },
+    { "source": "/api", "destination": "/docs", "permanent": true }
+  ],
   "routes": [
     { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/robots.txt", "dest": "/static/robots.txt" },
+    { "src": "/sitemap.xml", "dest": "/static/sitemap.xml" },
+    { "src": "/favicon.ico", "dest": "/static/conforva-mark.svg" },
     { "src": "/", "dest": "/static/landing.html" },
-    { "src": "/landing", "dest": "/static/landing.html" },
     { "src": "/login", "dest": "/static/auth.html" },
     { "src": "/dashboard", "dest": "/static/dashboard.html" },
     { "src": "/pricing", "dest": "/static/pricing.html" },
     { "src": "/security", "dest": "/static/security.html" },
     { "src": "/compliance", "dest": "/static/compliance.html" },
     { "src": "/docs", "dest": "/static/docs.html" },
-    { "src": "/api", "dest": "/static/api.html" },
     { "src": "/v1/(.*)", "dest": "/api/index.ts" },
     { "src": "/api/v1/(.*)", "dest": "/api/index.ts" },
     { "src": "/health", "dest": "/api/index.ts" }
