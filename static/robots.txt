@@ -1,7 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /v1/
+Disallow: /api/v1/
+Disallow: /dashboard
 Disallow: /static/dashboard.html
 Disallow: /static/app.html
 
-Sitemap: https://arexid.com/static/sitemap.xml
+Sitemap: https://conforva.com/sitemap.xml
