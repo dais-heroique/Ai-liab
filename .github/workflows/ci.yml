@@ -28,3 +28,5 @@ jobs:
           node --check static/enterprise-ux.js
           node --check static/conforva-brand.js
           node --check static/conforva-premium.js
+          node --check static/chat.js
+          node --check static/cookie-consent.js
