@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 const pages={
- 'landing.html':['/','Conforva — Sécurisez les actions de vos agents IA','Conforva vérifie les actions de vos agents IA avant leur exécution et vous donne un historique clair de chaque décision.'],
+ 'landing.html':['/','Sécurité et gouvernance des agents IA | Conforva','Conforva vérifie les actions de vos agents IA avant leur exécution et vous donne un historique clair de chaque décision.'],
  'security.html':['/security','Sécurité des agents IA — Conforva','Règles déterministes, vérification indépendante, isolation des organisations et traçabilité des décisions.'],
  'compliance.html':['/compliance','Conformité — Conforva','Informations sur les données, l’infrastructure, la sécurité et les limites de conformité de Conforva.'],
  'pricing.html':['/pricing','Tarifs — Conforva','Tarifs Conforva : Starter, Growth et Pro. 14 jours d’essai gratuit, puis abonnement mensuel via Stripe.'],
@@ -9,7 +9,22 @@ const pages={
  'faq.html':['/faq','FAQ — Conforva','Questions fréquentes sur la sécurité des agents IA, les données, le chat privé, l’API et les abonnements.'],
  'privacy.html':['/privacy','Politique de confidentialité — Conforva','Données collectées, finalités, sécurité, conservation, cookies et droits concernant Conforva.'],
  'terms.html':['/terms','Conditions d’utilisation — Conforva','Conditions d’utilisation du service Conforva.'],
- 'chat.html':['/chat','Chat privé — Conforva','Interface de discussion privée avec Conforva Intelligence et son Security Layer.']
+ 'chat.html':['/chat','Chat privé — Conforva','Interface de discussion privée avec Conforva Intelligence et son Security Layer.'],
+ 'ai-agent-security.html':['/ai-agent-security','Sécurité des agents IA | Conforva','Contrôlez les actions de vos agents IA avant leur exécution avec des règles, des limites et un audit exploitable.'],
+ 'ai-agent-governance.html':['/ai-agent-governance','Gouvernance des agents IA | Conforva','Cadrez les capacités, limites, politiques et décisions de vos agents IA autonomes.'],
+ 'ai-agent-guardrails.html':['/ai-agent-guardrails','Garde-fous pour agents IA | Conforva','Appliquez des garde-fous runtime au moment où vos agents IA s’apprêtent à agir.'],
+ 'ai-agent-action-governance.html':['/ai-agent-action-governance','Gouvernance des actions des agents IA | Conforva','Gouvernez les actions sensibles de vos agents IA avec des politiques, seuils et validations explicites.'],
+ 'ai-agent-authorization.html':['/ai-agent-authorization','Autorisation des agents IA | Conforva','Définissez le périmètre, les capacités, les ressources et les limites autorisées pour chaque agent IA.'],
+ 'ai-agent-observability.html':['/ai-agent-observability','Observabilité des agents IA | Conforva','Comprenez les actions, décisions, incidents et événements d’audit de vos agents IA.'],
+ 'ai-agent-risk-management.html':['/ai-agent-risk-management','Gestion des risques des agents IA | Conforva','Réduisez le rayon d’impact des agents autonomes grâce à des limites et contrôles opérationnels.'],
+ 'ai-agent-security-for-ecommerce.html':['/ai-agent-security-for-ecommerce','Sécurité des agents IA pour l’e-commerce | Conforva','Sécurisez remboursements, commandes, données clients et APIs utilisées par vos agents IA.'],
+ 'ai-agent-security-for-finance.html':['/ai-agent-security-for-finance','Sécurité des agents IA pour la finance | Conforva','Ajoutez des limites et validations aux paiements, transferts et opérations financières des agents IA.'],
+ 'ai-agent-security-for-customer-service.html':['/ai-agent-security-for-customer-service','Sécurité des agents IA pour le service client | Conforva','Encadrez les lectures, écritures, communications et escalades de vos agents de support.'],
+ 'blog-what-are-ai-agents.html':['/blog/what-are-ai-agents','Que sont les agents IA ? | Conforva','Comprendre les agents IA, leurs outils, leur autonomie et les risques liés à leurs actions.'],
+ 'blog-what-are-ai-agent-guardrails.html':['/blog/what-are-ai-agent-guardrails','Que sont les garde-fous pour agents IA ? | Conforva','Comprendre les garde-fous runtime et pourquoi ils contrôlent les actions avant leur exécution.'],
+ 'blog-ai-agent-security-checklist.html':['/blog/ai-agent-security-checklist','Checklist de sécurité des agents IA | Conforva','Une checklist pratique pour sécuriser identité, privilèges, limites et audit des agents IA autonomes.'],
+ 'blog-ai-agent-governance-framework.html':['/blog/ai-agent-governance-framework','Cadre de gouvernance des agents IA | Conforva','Construire un cadre de gouvernance reliant rôles, capacités, politiques, décisions et preuves.'],
+ 'blog-ai-agent-vs-chatbot.html':['/blog/ai-agent-vs-chatbot','Agent IA vs chatbot : quelle différence ? | Conforva','Comprendre pourquoi le contrôle change quand une IA peut utiliser des outils et déclencher des actions.']
 };
 for(const [file,[path,title,description]] of Object.entries(pages)){
  const p=join('static',file);let s=readFileSync(p,'utf8');
