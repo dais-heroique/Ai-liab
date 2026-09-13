@@ -1,4 +1,4 @@
-import {readdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 const pages={
  'landing.html':['/','Conforva — Sécurisez les actions de vos agents IA','Conforva vérifie les actions de vos agents IA avant leur exécution et vous donne un historique clair de chaque décision.'],
@@ -12,12 +12,12 @@ const pages={
  'chat.html':['/chat','Chat privé — Conforva','Interface de discussion privée avec Conforva Intelligence et son Security Layer.']
 };
 for(const [file,[path,title,description]] of Object.entries(pages)){
- const p=join('static',file); let s=readFileSync(p,'utf8');
+ const p=join('static',file);let s=readFileSync(p,'utf8');
  const tags=`<link rel="canonical" href="https://conforva.com${path}"><meta property="og:type" content="website"><meta property="og:site_name" content="Conforva"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="https://conforva.com${path}"><meta property="og:image" content="https://conforva.com/static/conforva-mark.svg"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}"><meta name="twitter:image" content="https://conforva.com/static/conforva-mark.svg"><meta name="theme-color" content="#05070a"><style>:focus-visible{outline:2px solid currentColor;outline-offset:3px}html{scroll-behavior:smooth}@media(max-width:700px){body{overflow-x:hidden}button,a{touch-action:manipulation}}</style>`;
  s=s.replace(/<\/head>/i,`${tags}</head>`);
- if(!/<main[^>]*id=["']main-content["']/i.test(s)&&/<main\b/i.test(s)) s=s.replace(/<main\b/i,'<main id="main-content"');
- if(!/<a[^>]+href=["']#main-content["']/i.test(s)) s=s.replace(/<body([^>]*)>/i,'<body$1><a href="#main-content" style="position:absolute;left:12px;top:12px;z-index:10000;transform:translateY(-200%);padding:8px 12px;background:#0b0d10;color:#fff;border-radius:6px" onfocus="this.style.transform=\'none\'" onblur="this.style.transform=\'translateY(-200%)\'">Aller au contenu</a>');
- if(!/cookie-consent\.js/i.test(s)&&!['auth.html'].includes(file)) s=s.replace(/<\/body>/i,'<script src="/static/cookie-consent.js" defer></script></body>');
+ if(!/<main[^>]*id=["']main-content["']/i.test(s)&&/<main\b/i.test(s))s=s.replace(/<main\b/i,'<main id="main-content"');
+ if(!/<a[^>]+href=["']#main-content["']/i.test(s))s=s.replace(/<body([^>]*)>/i,'<body$1><a href="#main-content" style="position:absolute;left:12px;top:12px;z-index:10000;transform:translateY(-200%);padding:8px 12px;background:#0b0d10;color:#fff;border-radius:6px" onfocus="this.style.transform=\'none\'" onblur="this.style.transform=\'translateY(-200%)\'">Aller au contenu</a>');
+ if(file!=='landing.html'&&!/cookie-consent\.js/i.test(s)&&file!=='auth.html')s=s.replace(/<\/body>/i,'<script src="/static/cookie-consent.js" defer></script></body>');
  writeFileSync(p,s);
 }
 console.log(`Prepared ${Object.keys(pages).length} pages with canonical, social metadata, accessibility and consent hooks.`);
