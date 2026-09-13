@@ -13,7 +13,7 @@ const pages={
 };
 for(const [file,[path,title,description]] of Object.entries(pages)){
  const p=join('static',file);let s=readFileSync(p,'utf8');
- s=s.replace(/<title>.*?<\/title>/i,`<title>${title}</title>`);
+ s=s.replace(/<title>.*?<\/title>/i,`<title>${title}</title>`).replace(/<link[^>]+rel=["']canonical["'][^>]*>/gi,'').replace(/<meta[^>]+name=["']description["'][^>]*>/gi,'');
  const tags=`<link rel="canonical" href="https://conforva.com${path}"><meta name="description" content="${description}"><meta property="og:type" content="website"><meta property="og:site_name" content="Conforva"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="https://conforva.com${path}"><meta property="og:image" content="https://conforva.com/static/conforva-mark.svg"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}"><meta name="twitter:image" content="https://conforva.com/static/conforva-mark.svg"><meta name="theme-color" content="#05070a"><style>:focus-visible{outline:2px solid currentColor;outline-offset:3px}html{scroll-behavior:smooth}@media(max-width:700px){body{overflow-x:hidden}button,a{touch-action:manipulation}}</style>`;
  s=s.replace(/<\/head>/i,`${tags}</head>`);
  if(!/<main[^>]*id=["']main-content["']/i.test(s)&&/<main\b/i.test(s))s=s.replace(/<main\b/i,'<main id="main-content"');
