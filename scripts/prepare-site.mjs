@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 const pages={
- 'landing.html':['/','Sécurité et gouvernance des agents IA | Conforva','Conforva vérifie les actions de vos agents IA avant leur exécution et vous donne un historique clair de chaque décision.'],
+ 'landing.html':['/','Conforva | AI Agent Security & Governance Platform','Secure autonomous AI agents with runtime policies, action controls, human approval and audit trails. Conforva gives security teams control over what AI agents can do.'],
  'security.html':['/security','Sécurité des agents IA — Conforva','Règles déterministes, vérification indépendante, isolation des organisations et traçabilité des décisions.'],
  'compliance.html':['/compliance','Conformité — Conforva','Informations sur les données, l’infrastructure, la sécurité et les limites de conformité de Conforva.'],
  'pricing.html':['/pricing','Tarifs — Conforva','Tarifs Conforva : Starter, Growth et Pro. 14 jours d’essai gratuit, puis abonnement mensuel via Stripe.'],
@@ -10,6 +10,8 @@ const pages={
  'privacy.html':['/privacy','Politique de confidentialité — Conforva','Données collectées, finalités, sécurité, conservation, cookies et droits concernant Conforva.'],
  'terms.html':['/terms','Conditions d’utilisation — Conforva','Conditions d’utilisation du service Conforva.'],
  'chat.html':['/chat','Chat privé — Conforva','Interface de discussion privée avec Conforva Intelligence et son Security Layer.'],
+ 'ai-agent-security-platform.html':['/ai-agent-security-platform','AI Agent Security Platform | Secure Autonomous AI Agents | Conforva','Conforva is an AI agent security platform that controls autonomous agent actions with policies, runtime guardrails, approvals and audit trails.'],
+ 'secure-ai-agents.html':['/secure-ai-agents','Secure AI Agents | Runtime Guardrails, Policies & Audit | Conforva','Secure autonomous AI agents with runtime policies, action limits, human approval and audit trails. Conforva helps security teams control what AI agents can do.'],
  'ai-agent-security.html':['/ai-agent-security','Sécurité des agents IA | Conforva','Contrôlez les actions de vos agents IA avant leur exécution avec des règles, des limites et un audit exploitable.'],
  'ai-agent-governance.html':['/ai-agent-governance','Gouvernance des agents IA | Conforva','Cadrez les capacités, limites, politiques et décisions de vos agents IA autonomes.'],
  'ai-agent-guardrails.html':['/ai-agent-guardrails','Garde-fous pour agents IA | Conforva','Appliquez des garde-fous runtime au moment où vos agents IA s’apprêtent à agir.'],
