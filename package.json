@@ -3,13 +3,24 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "scripts": {"dev":"tsx server.ts","build":"tsc --noEmit","lint":"tsc --noEmit","start":"tsx server.ts"},
-  "dependencies": {
-    "@libsql/client":"^0.15.15",
-    "@vercel/node":"^5.3.0",
-    "ai":"^5.0.0",
-    "cors":"^2.8.5",
-    "express":"^4.21.2"
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "node scripts/prepare-site.mjs && npm run lint && node scripts/indexnow.mjs",
+    "lint": "tsc --noEmit",
+    "start": "tsx server.ts"
   },
-  "devDependencies": {"@types/cors":"^2.8.17","@types/express":"^4.17.21","@types/node":"^22.0.0","tsx":"^4.19.2","typescript":"^5.6.3"}
+  "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "@vercel/node": "^5.3.0",
+    "ai": "^5.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
 }
