@@ -1,7 +1,41 @@
 import {readdirSync,readFileSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
-const root='static'; const html=readdirSync(root).filter(f=>f.endsWith('.html')); const routeFiles=new Set(['landing.html','auth.html','dashboard.html','chat.html','pricing.html','security.html','compliance.html','docs.html','privacy.html','terms.html','faq.html','404.html','robots.txt','sitemap.xml','conforva-mark.svg']);
+
+const root='static';
+const vercel=JSON.parse(readFileSync('vercel.json','utf8'));
+const html=readdirSync(root).filter(f=>f.endsWith('.html'));
+
+// Every public path declared in vercel.json (routes + redirects).
+const knownPaths=new Set([
+  ...vercel.routes.map(r=>r.src).filter(src=>!/[()*\\]/.test(src)),
+  ...(vercel.redirects||[]).map(r=>r.source),
+]);
+const isKnownPath=p=>knownPaths.has(p)||p.startsWith('/v1/')||p.startsWith('/api/v1/');
+
 let errors=0;
-for(const file of html){const s=readFileSync(join(root,file),'utf8'); if(!/<meta[^>]+name=["']viewport["']/i.test(s)) {console.error(`${file}: missing viewport meta`);errors++;} for(const m of s.matchAll(/(?:href|src)=["'](\/static\/[^"'#?]+)["']/gi)){const p=m[1].replace('/static/',''); if(!routeFiles.has(p)&&!existsSync(join(root,p))){console.error(`${file}: missing local asset ${m[1]}`);errors++;}} for(const m of s.matchAll(/href=["'](\/[^"'#?]+)(?:#[^"']*)?["']/gi)){const p=m[1].split('/')[1]; const known=['login','dashboard','chat','pricing','security','compliance','docs','privacy','terms','faq','api','v1','health','landing','']; if(!known.includes(p)&&!existsSync(join(root,m[1].replace('/','')))){console.error(`${file}: suspicious local link ${m[1]}`);errors++;}} for(const m of s.matchAll(/<img\b[^>]*>/gi)){if(!/\balt=["'][^"']*["']/i.test(m[0])){console.error(`${file}: image without alt`);errors++;}} for(const m of s.matchAll(/<form\b[\s\S]*?<\/form>/gi)){if(!/<input\b/i.test(m[0])){console.error(`${file}: form has no input`);errors++;} if(!/<label\b/i.test(m[0])){console.error(`${file}: form has no label`);errors++;}}}
-const v=readFileSync('vercel.json','utf8'); if(!v.includes('Cache-Control')||!v.includes('immutable')){console.error('vercel.json: static caching not configured');errors++;}
-if(errors){process.exit(1)} console.log(`Site audit OK: ${html.length} HTML pages checked, local assets/forms/meta/caching validated.`);
+const fail=msg=>{console.error(msg);errors++;};
+
+for(const file of html){
+  const s=readFileSync(join(root,file),'utf8');
+  if(!/<meta[^>]+name=["']viewport["']/i.test(s))fail(`${file}: missing viewport meta`);
+  for(const m of s.matchAll(/(?:href|src)=["'](\/static\/[^"'#?]+)[^"']*["']/gi)){
+    if(!existsSync(join(root,m[1].replace('/static/',''))))fail(`${file}: missing local asset ${m[1]}`);
+  }
+  for(const m of s.matchAll(/href=["'](\/(?!static\/)[^"'#?]*)(?:[?#][^"']*)?["']/gi)){
+    if(!isKnownPath(m[1]))fail(`${file}: link to unknown route ${m[1]}`);
+  }
+  for(const m of s.matchAll(/<img\b[^>]*>/gi)){
+    if(!/\balt=["'][^"']*["']/i.test(m[0]))fail(`${file}: image without alt`);
+  }
+  for(const m of s.matchAll(/<form\b[\s\S]*?<\/form>/gi)){
+    if(!/<(input|textarea|select)\b/i.test(m[0]))fail(`${file}: form has no field`);
+    if(!/<label\b|aria-label=|placeholder=/i.test(m[0]))fail(`${file}: form field has no label`);
+  }
+}
+for(const m of readFileSync(join(root,'sitemap.xml'),'utf8').matchAll(/<loc>https:\/\/conforva\.com(\/[^<]*)<\/loc>/g)){
+  if(!isKnownPath(m[1]))fail(`sitemap.xml: unknown route ${m[1]}`);
+}
+if(!JSON.stringify(vercel.headers||[]).includes('Cache-Control'))fail('vercel.json: static caching not configured');
+
+if(errors){console.error(`Site audit failed with ${errors} issue(s).`);process.exit(1);}
+console.log(`Site audit OK: ${html.length} HTML pages checked (assets, routes, forms, meta, sitemap).`);

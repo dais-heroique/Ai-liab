@@ -1,1 +1,205 @@
-(()=>{const nav=document.querySelector('.nav'),menu=document.querySelector('.menu');if(menu){menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(open));if(open&&!nav.querySelector('.mobile-nav'))nav.insertAdjacentHTML('beforeend','<div class="mobile-nav"><a href="#produit">Produit</a><a href="#securite">Sécurité</a><a href="#developers">Développeurs</a><a href="/compliance">Conformité</a><a href="#paywall">Tarifs</a><a href="/faq">FAQ</a><a href="/chat">Chat privé</a><a href="/login">Se connecter</a></div>');else if(!open)nav.querySelector('.mobile-nav')?.remove()})}document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',()=>{nav?.classList.remove('open');menu?.setAttribute('aria-expanded','false');nav?.querySelector('.mobile-nav')?.remove()}));const reduce=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false;document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in-view'));if(!reduce&&'IntersectionObserver'in window){const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in-view');io.unobserve(e.target)}}),{threshold:.08});document.querySelectorAll('.reveal').forEach(el=>io.observe(el))}document.body.classList.add('loaded');const flow=document.querySelector('[data-flow]');if(flow&&!reduce){const nodes=[...flow.querySelectorAll('.node')];let i=1;setInterval(()=>{nodes.forEach(n=>n.classList.remove('active'));nodes[i%nodes.length].classList.add('active');i++},2200)}document.querySelectorAll('.magnetic').forEach(el=>{if(reduce)return;let raf=0;el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)*.07,y=(e.clientY-r.top-r.height/2)*.07;if(!raf)raf=requestAnimationFrame(()=>{el.style.transform=`translate3d(${x}px,${y}px,0)`;raf=0})});el.addEventListener('pointerleave',()=>{el.style.transform='';if(raf){cancelAnimationFrame(raf);raf=0}})});document.querySelectorAll('.faq details').forEach(d=>d.querySelector('summary')?.addEventListener('click',()=>document.querySelectorAll('.faq details[open]').forEach(o=>{if(o!==d)o.removeAttribute('open')})));const demo=document.querySelector('[data-verification-demo]'),run=demo?.querySelector('[data-run-demo']);if(demo&&run){const input=demo.querySelector('.demo-input'),cards=[...demo.querySelectorAll('.verify-card')],status=demo.querySelector('[data-demo-status]'),result=demo.querySelector('[data-demo-result]');input?.querySelector('p')?.replaceChildren(document.createTextNode('« Valide cette commande et expédie-la immédiatement. »'));cards[0]?.querySelector('strong')&&(cards[0].querySelector('strong').textContent='Expédition immédiate');cards[0]?.querySelector('small')&&(cards[0].querySelector('small').textContent='Commande #CF-84291');cards[1]?.querySelector('span')&&(cards[1].querySelector('span').textContent='02 · CONTEXTE & RÈGLES');cards[1]?.querySelector('strong')&&(cards[1].querySelector('strong').textContent='18 450 € · adresse récente');cards[1]?.querySelector('small')&&(cards[1].querySelector('small').textContent='Paiement validé · modification il y a 6 min');cards[2]?.querySelector('span')&&(cards[2].querySelector('span').textContent='03 · COMPRÉHENSION');cards[2]?.querySelector('strong')&&(cards[2].querySelector('strong').textContent='YES');cards[2]?.querySelector('small')&&(cards[2].querySelector('small').textContent='La demande est correctement comprise');const context=document.createElement('div');context.className='demo-context';context.innerHTML='<div class="context-head"><span>CONTEXTE DE L’ACTION</span><small>SIMULATION</small></div><div class="context-grid"><div><span>CLIENT</span><strong>ACME Industries</strong></div><div><span>COMMANDE</span><strong>#CF-84291</strong></div><div><span>MONTANT</span><strong>18 450 €</strong></div><div><span>STATUT</span><strong>Paiement validé</strong></div><div><span>ADRESSE</span><strong>Modifiée il y a 6 min</strong></div><div><span>AUTORISATION AGENT</span><strong>Jusqu’à 5 000 €</strong></div></div>';input?.insertAdjacentElement('afterend',context);const decision=document.createElement('div');decision.className='demo-decision';decision.setAttribute('role','status');decision.setAttribute('aria-live','polite');decision.innerHTML='<div><span>DÉCISION</span><strong>EN ATTENTE</strong></div><p>Les contrôles vont déterminer si l’action peut être exécutée.</p>';demo.append(decision);document.querySelector('.hero-console .console-row:nth-of-type(2) span')?.replaceChildren(document.createTextNode('expédition · 18 450 €'));const aud=document.querySelector('.audience-card'),ah=aud?.querySelector('h3'),ap=aud?.querySelector('p');if(ah)ah.textContent='Commandes sensibles';if(ap)ap.textContent='Un agent peut préparer une expédition ou modifier une commande. Conforva vérifie le contexte et les autorisations avant que l’action atteigne votre système.';const ev=document.querySelector('.proof-panel .record'),evs=ev?.querySelectorAll('strong');if(evs&&evs.length>=5){evs[1].textContent='expédition · 18 450 €';evs[2].textContent='YES';evs[3].textContent='BLOQUÉE';evs[4].textContent='order_amount_limit'}let timers=[];const clear=()=>{timers.forEach(clearTimeout);timers=[]};const focus=(el,text)=>{demo.querySelectorAll('.demo-focus').forEach(n=>n.classList.remove('demo-focus'));el?.classList.add('demo-focus');if(text)status.textContent=text};const setDecision=(state,text)=>{result.textContent=state;decision.querySelector('strong').textContent=state==='BLOCKED'?'ACTION BLOQUÉE':state==='APPROVED'?'ACTION AUTORISÉE':state;decision.querySelector('p').textContent=text};run.addEventListener('click',()=>{clear();demo.classList.remove('running','done');demo.querySelectorAll('.demo-focus,.demo-answer').forEach(n=>n.classList.remove('demo-focus','demo-answer'));result.textContent='EN ATTENTE';decision.querySelector('strong').textContent='EN ATTENTE';decision.querySelector('p').textContent='Les contrôles vont déterminer si l’action peut être exécutée.';run.disabled=true;run.setAttribute('aria-busy','true');demo.classList.add('running');if(reduce){setDecision('BLOCKED','18 450 € dépasse l’autorisation de sales-agent fixée à 5 000 €. La demande est comprise, mais la règle d’autorisation reste prioritaire.');demo.classList.add('done');run.disabled=false;run.removeAttribute('aria-busy');return}timers.push(setTimeout(()=>focus(input,'Lecture de la demande…'),120));timers.push(setTimeout(()=>focus(cards[0],'01 · Action identifiée'),650));timers.push(setTimeout(()=>focus(context,'Contexte chargé — commande, montant et autorisations'),1150));timers.push(setTimeout(()=>focus(cards[1],'02 · Règles applicables — limite de 5 000 €'),1700));timers.push(setTimeout(()=>focus(cards[2],'03 · Compréhension contrôlée — YES'),2250));timers.push(setTimeout(()=>{demo.querySelectorAll('.demo-focus').forEach(n=>n.classList.remove('demo-focus'));decision.classList.add('demo-answer');setDecision('BLOCKED','18 450 € dépasse l’autorisation de sales-agent fixée à 5 000 €. La demande est comprise, mais la règle d’autorisation reste prioritaire.');demo.classList.add('done');status.textContent='Simulation terminée — compréhension validée, action bloquée par la règle d’autorisation.';run.disabled=false;run.removeAttribute('aria-busy')},2900))})}})();const consent=document.createElement('script');consent.src='/static/cookie-consent.js';consent.defer=true;document.body.appendChild(consent);
+/* Conforva — landing page behaviour.
+   The mobile menu lives in site-nav.js (shared by every page). */
+(() => {
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+  /* Reveal sections */
+  const reveals = document.querySelectorAll('.reveal');
+  reveals.forEach((el) => el.classList.add('in-view'));
+  document.body.classList.add('loaded');
+
+  /* "How it works" flow: cycle the active node */
+  const flow = document.querySelector('[data-flow]');
+  if (flow && !reduce) {
+    const nodes = [...flow.querySelectorAll('.node')];
+    let i = 1;
+    setInterval(() => {
+      nodes.forEach((n) => n.classList.remove('active'));
+      nodes[i % nodes.length].classList.add('active');
+      i++;
+    }, 2200);
+  }
+
+  /* Magnetic buttons (pointer devices only) */
+  if (!reduce && window.matchMedia?.('(hover: hover)').matches) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      let raf = 0;
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width / 2) * 0.07;
+        const y = (e.clientY - r.top - r.height / 2) * 0.07;
+        if (!raf) raf = requestAnimationFrame(() => {
+          el.style.transform = `translate3d(${x}px,${y}px,0)`;
+          raf = 0;
+        });
+      });
+      el.addEventListener('pointerleave', () => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        el.style.transform = '';
+      });
+    });
+  }
+
+  /* FAQ: only one answer open at a time */
+  const faqItems = document.querySelectorAll('.faq details');
+  faqItems.forEach((d) => d.addEventListener('toggle', () => {
+    if (d.open) faqItems.forEach((o) => { if (o !== d) o.open = false; });
+  }));
+
+  /* Verification demo (simulation only — nothing is sent) */
+  const demo = document.querySelector('[data-verification-demo]');
+  const run = demo?.querySelector('[data-run-demo]');
+  if (demo && run) {
+    const $ = (sel) => demo.querySelector(sel);
+    const node = (name) => demo.querySelector(`[data-demo-node="${name}"]`);
+    const runLabel = $('[data-run-label]');
+    const step1 = $('[data-demo-step1]');
+    const step2 = $('[data-demo-step2]');
+    const result = $('[data-demo-result]');
+    const status = $('[data-demo-status]');
+    const log = $('[data-demo-log]');
+    const progress = $('[data-demo-progress]');
+    const decision = node('decision');
+    const decisionLabel = $('[data-demo-decision]');
+    const explain = $('[data-demo-explain]');
+    const limit = $('[data-demo-limit]');
+
+    const initial = {
+      step1: step1.textContent,
+      step2: step2.textContent,
+      explain: explain.textContent,
+      status: status.textContent,
+    };
+
+    let timers = [];
+    let startedAt = 0;
+    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+    const narrow = () => window.innerWidth <= 800;
+    const keepVisible = (el) => {
+      if (!el || !narrow()) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < 70 || r.bottom > window.innerHeight - 20) {
+        el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      }
+    };
+    const focus = (el) => {
+      demo.querySelectorAll('.demo-focus').forEach((n) => n.classList.remove('demo-focus'));
+      el?.classList.add('demo-focus');
+      keepVisible(el);
+    };
+    const addLog = (text, kind = '') => {
+      const li = document.createElement('li');
+      if (kind) li.className = kind;
+      const t = ((performance.now() - startedAt) / 1000).toFixed(2).replace('.', ',');
+      li.innerHTML = `<time>+${t} s</time><span></span>`;
+      li.querySelector('span').textContent = text;
+      log.appendChild(li);
+    };
+    const setProgress = (pct) => { progress.style.width = `${pct}%`; };
+
+    const reset = () => {
+      clearTimers();
+      demo.classList.remove('running', 'done');
+      demo.querySelectorAll('.demo-focus,.demo-answer').forEach((n) => n.classList.remove('demo-focus', 'demo-answer'));
+      decision.classList.remove('is-blocked');
+      limit.classList.remove('context-hit');
+      result.classList.remove('is-yes');
+      step1.textContent = initial.step1;
+      step2.textContent = initial.step2;
+      result.textContent = 'EN ATTENTE';
+      decisionLabel.textContent = 'EN ATTENTE';
+      explain.textContent = initial.explain;
+      log.replaceChildren();
+      setProgress(0);
+    };
+
+    const steps = [
+      { at: 0, run: () => {
+        focus(node('input'));
+        status.textContent = 'Lecture de la demande…';
+        addLog('Demande reçue de l’application SAV');
+        setProgress(8);
+      } },
+      { at: 600, run: () => {
+        focus(node('step1'));
+        step1.textContent = 'Remboursement · 750 €';
+        status.textContent = '01 · Action identifiée';
+        addLog('Action identifiée : remboursement de 750 € sur carte');
+        setProgress(25);
+      } },
+      { at: 1300, run: () => {
+        focus(node('step2'));
+        step2.textContent = '…';
+        status.textContent = '02 · L’IA principale reformule la demande…';
+        setProgress(40);
+      } },
+      { at: 1800, run: () => {
+        step2.textContent = '« Rembourser 750 € au client, sur sa carte »';
+        addLog('Reformulation produite par l’IA principale');
+        setProgress(52);
+      } },
+      { at: 2400, run: () => {
+        focus(node('step3'));
+        result.textContent = '…';
+        status.textContent = '03 · Une IA indépendante compare la demande et la reformulation…';
+        setProgress(64);
+      } },
+      { at: 2950, run: () => {
+        result.textContent = 'YES ✓';
+        result.classList.add('is-yes');
+        addLog('Compréhension validée par l’IA indépendante (YES)', 'ok');
+        setProgress(76);
+      } },
+      { at: 3500, run: () => {
+        focus(node('context'));
+        limit.classList.add('context-hit');
+        status.textContent = 'Règles déterministes — limite de remboursement de l’agent…';
+        addLog('Règle refund_limit : 750 € > 500 € autorisés', 'ko');
+        setProgress(90);
+      } },
+      { at: 4200, run: () => finish() },
+    ];
+
+    const finish = () => {
+      clearTimers();
+      demo.querySelectorAll('.demo-focus').forEach((n) => n.classList.remove('demo-focus'));
+      decision.classList.add('demo-answer', 'is-blocked');
+      decisionLabel.textContent = 'ACTION BLOQUÉE';
+      explain.textContent = 'La demande est bien comprise, mais 750 € dépasse l’autorisation de support-agent (500 €). La règle déterministe reste prioritaire : le remboursement n’est pas exécuté et la décision est enregistrée dans l’historique.';
+      status.textContent = 'Simulation terminée — compréhension validée, action bloquée par la règle refund_limit.';
+      if (!log.querySelector('.final')) addLog('Décision : BLOCK — enregistrée dans l’historique', 'ko final');
+      setProgress(100);
+      demo.classList.remove('running');
+      demo.classList.add('done');
+      run.disabled = false;
+      run.removeAttribute('aria-busy');
+      runLabel.textContent = 'Relancer la simulation';
+      if (!reduce) keepVisible(decision);
+    };
+
+    run.addEventListener('click', () => {
+      reset();
+      startedAt = performance.now();
+      run.disabled = true;
+      run.setAttribute('aria-busy', 'true');
+      runLabel.textContent = 'Vérification en cours…';
+      demo.classList.add('running');
+      if (reduce) {
+        steps.slice(0, -1).forEach((s) => s.run());
+        finish();
+        return;
+      }
+      steps.forEach((s) => timers.push(setTimeout(s.run, s.at)));
+    });
+
+    status.textContent = initial.status;
+  }
+
+  /* Cookie consent */
+  const consent = document.createElement('script');
+  consent.src = '/static/cookie-consent.js';
+  consent.defer = true;
+  document.body.appendChild(consent);
+})();

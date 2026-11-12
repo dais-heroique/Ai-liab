@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const secret=()=>process.env.STRIPE_SECRET_KEY||'';
-const priceIds:Record<string,string|undefined>={starter:process.env.STRIPE_PRICE_STARTER,growth:process.env.STRIPE_PRICE_GROWTH,pro:process.env.STRIPE_PRICE_PRO};
+const priceIds:Record<string,string|undefined>={starter:process.env.STRIPE_PRICE_STARTER,growth:process.env.STRIPE_PRICE_GROWTH||process.env.STRIPE_PRICE_TEAM,pro:process.env.STRIPE_PRICE_PRO||process.env.STRIPE_PRICE_ENTERPRISE};
 const api=async(path:string,params:Record<string,string|undefined>={})=>{if(!secret())throw new Error('stripe_not_configured');const body=new URLSearchParams();for(const [k,v] of Object.entries(params))if(v!==undefined)body.set(k,v);const r=await fetch(`https://api.stripe.com/v1/${path}`,{method:'POST',headers:{Authorization:`Bearer ${secret()}`,'Content-Type':'application/x-www-form-urlencoded'},body});const data:any=await r.json();if(!r.ok)throw new Error(data?.error?.message||'stripe_request_failed');return data};
 export const stripeEnabled=Boolean(secret());
 export const PLANS={
