@@ -29,6 +29,8 @@ jobs:
           node --check static/conforva-brand.js
           node --check static/conforva-premium.js
           node --check static/chat.js
+          node --check static/landing.js
+          node --check static/site-nav.js
           node --check static/cookie-consent.js
           node --check scripts/prepare-site.mjs
           node --check scripts/site-audit.mjs

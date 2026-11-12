@@ -92,8 +92,8 @@ Configure these server-side environment variables:
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_STARTER`
-- `STRIPE_PRICE_TEAM`
-- `STRIPE_PRICE_ENTERPRISE`
+- `STRIPE_PRICE_GROWTH` (legacy name `STRIPE_PRICE_TEAM` is still accepted)
+- `STRIPE_PRICE_PRO` (legacy name `STRIPE_PRICE_ENTERPRISE` is still accepted)
 
 Create the matching recurring prices in Stripe and set their Price IDs in Vercel. Configure Stripe to send subscription and checkout events to `/v1/billing/webhook`.
 
